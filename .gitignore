@@ -1,0 +1,25 @@
+.vscode
+coverage
+
+# Ignore Mac system files
+.DS_store
+
+# Ignore all text files
+*.txt
+
+# Ignore files related to API keys
+.env
+
+# Ignore SASS config files
+.sass-cache
+
+# Keep data directory but ignore contents
+data/*
+!data/.gitkeep
+
+
+# Ignore VSCode files
+PeerReview.code-workspace
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints

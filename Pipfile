@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+autopep8 = "*"
+
+[packages]
+requests = "*"
+pandas = "*"
+pick = "*"
+pprint = "*"
+jupyter = "*"
+ipywidgets = "*"
+
+[requires]
+python_version = "3.7"
