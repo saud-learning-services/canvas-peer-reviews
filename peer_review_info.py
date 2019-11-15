@@ -10,11 +10,12 @@ last edit:
 Monday, November 11, 2019
 """
 import json
+import ipywidgets as widgets
 
 import pandas as pd
 import requests
 
-from helpers import get_user_inputs, make_assessment_df, make_peer_review_df, shut_down, make_output_tables
+from helpers import make_assessment_df, make_peer_review_df, shut_down, make_output_tables
 
 
 def peer_review(inputs):
@@ -23,9 +24,9 @@ def peer_review(inputs):
     # inputs = get_user_inputs()
 
     token = inputs['token']
-    base_url = inputs['url']
-    course = inputs['course']
-    asmt_id = inputs['assignment_id']
+    base_url = inputs['base_url']
+    course = inputs['course_number']
+    asmt_id = inputs['assignment_number']
 
     # headers variable for REST API calls
     headers = {
@@ -91,3 +92,19 @@ def peer_review(inputs):
                        course, assignment['points_possible'])
 
     print('Tables successfully built in /data folder!')
+
+
+def display_url_selector():
+    CANVAS_INSTANCES = ['https://canvas.ubc.ca',
+                        'https://ubc.instructure.com',
+                        'https://ubc.test.instructure.com',
+                        'https://ubcsandbox.instructure.com']
+
+    url_selector = widgets.Dropdown(
+        options=CANVAS_INSTANCES,
+        value='https://canvas.ubc.ca',
+        description='Instance:',
+        disabled=False,
+    )
+
+    display(url_selector)

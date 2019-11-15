@@ -14,6 +14,9 @@ pick = "*"
 pprint = "*"
 jupyter = "*"
 ipywidgets = "*"
+getpass4 = "*"
+canvasapi = "*"
+termcolor = "*"
 
 [requires]
 python_version = "3.7"

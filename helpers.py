@@ -12,28 +12,6 @@ CANVAS_INSTANCES = ['https://canvas.ubc.ca',
                     'https://ubcsandbox.instructure.com']
 
 
-def get_user_inputs():
-    # ENTER THE FOLLOWING INFORMATION
-    token = getpass.getpass('Enter your token: ')
-
-    # course url
-    url = pick(CANVAS_INSTANCES,
-               'Select the canvas instance to use.')[0]
-
-    # course number
-    course = input('course number: ')
-
-    # the assignment ID number
-    assignment_id = input('assignment_id: ')
-
-    return {
-        'token': token,
-        'url': url,
-        'course': course,
-        'assignment_id': assignment_id
-    }
-
-
 def make_assessment_df(assessments):
     if not assessments:
         shut_down(
