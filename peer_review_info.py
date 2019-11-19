@@ -83,7 +83,7 @@ def peer_review(inputs):
     # pprint.pprint(rubric['assessments'])
     # pprint.pprint(peer_review)
 
-    # convert JSON objects into pandas dataframes
+    # convert JSON objects into pandas dataframesc
     assessments_df = make_assessment_df(rubric['assessments'])
     peer_review_df = make_peer_review_df(peer_review)
     users_df = pd.DataFrame(users)

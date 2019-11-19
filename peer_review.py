@@ -24,8 +24,8 @@ CANVAS_INSTANCES = ['https://canvas.ubc.ca',
 
 def main():
 
-    token = getpass.getpass('Please enter your token: ')
     url = input('Canvas Instance URL: ')
+    token = getpass.getpass('Please enter your token: ')
     canvas = Canvas(url, token)
 
     try:
@@ -53,6 +53,8 @@ def main():
     confirm = input(
         'Would you like to continue using the above information?[y/n]: ')
 
+    print('\n')
+    
     if confirm is 'n' or confirm is 'N':
         shut_down('Exiting...')
     elif confirm is 'y' or confirm is 'Y':
@@ -68,7 +70,7 @@ def main():
 
 
 def peer_review(inputs, course, assignment):
-    users = course.get_users()
+    users = course.get_users(enrollment_type=['student'])
     rubric_id = assignment.attributes['rubric_settings']['id']
     rubric = course.get_rubric(
         rubric_id,
@@ -101,17 +103,17 @@ def peer_review(inputs, course, assignment):
                 overview_df.at[outer_index,
                                f'Review: {num_scores_for_user}'] = score
 
-    overview_df = overview_df.drop(['CanvasUserID'], axis=1)
+    overview_df = overview_df.drop(['SID'], axis=1)
 
     now = datetime.now()
     date_time = now.strftime('%m_%d_%Y, %H:%M:%S')
 
     dir_name = f'{course.name}({date_time})'
-    dir_path = f'data/{dir_name}'
+    dir_path = f'peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
-    output_csv(ap_table, dir_path, "assessments")
-    output_csv(overview_df, dir_path, "overview")
+    output_csv(ap_table, dir_path, "peer_review_assessments")
+    output_csv(overview_df, dir_path, "peer_review_overview")
 
 
 def make_json_list(object_list):
@@ -123,7 +125,7 @@ def make_json_list(object_list):
 
 def output_csv(df, location, file_name):
     df.to_csv(f'{location}/{file_name}.csv', index=False)
-    cprint(f'{file_name}.csv successfully created in /data', 'green')
+    cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
 
 
 def make_user_table(users, peer_reviews):
@@ -257,6 +259,6 @@ def shut_down(msg):
     Args:
         msg (string): message to print before printing 'Shutting down...' and exiting the script
     """
-    cprint(msg, 'red')
+    cprint(f'\n{msg}\n', 'red')
     print('Shutting down...')
     sys.exit()
