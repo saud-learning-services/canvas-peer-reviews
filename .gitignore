@@ -14,9 +14,8 @@ coverage
 .sass-cache
 
 # Keep data directory but ignore contents
-data/*
-!data/.gitkeep
-
+peer_review_data/*
+!peer_review_data/.gitkeep
 
 # Ignore VSCode files
 PeerReview.code-workspace
