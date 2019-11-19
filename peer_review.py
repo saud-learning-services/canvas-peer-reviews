@@ -1,10 +1,20 @@
 import getpass
+import json
+import time
+import os
+import sys
+from os.path import normcase
+
 import ipywidgets as widgets
+import pandas as pd
+import requests
 from canvasapi import Canvas
 from IPython.display import display
 from IPython.lib.pretty import pretty
 from termcolor import cprint
-from peer_review_info import peer_review
+from datetime import datetime
+
+# from peer_review_info import peer_review
 
 CANVAS_INSTANCES = ['https://canvas.ubc.ca',
                     'https://ubc.instructure.com',
@@ -12,7 +22,7 @@ CANVAS_INSTANCES = ['https://canvas.ubc.ca',
                     'https://ubcsandbox.instructure.com']
 
 
-def get_user_inputs():
+def main():
 
     token = getpass.getpass('Please enter your token: ')
     url = input('Canvas Instance URL: ')
@@ -22,20 +32,17 @@ def get_user_inputs():
         user = canvas.get_user('self')
         cprint(f'\nHello, {user.name}!', 'green')
     except Exception as e:
-        cprint('ERROR: could not get user from server. Please ensure token is correct and valid and ensure using the correct instance url.', 'red')
-        return
+        shut_down('ERROR: could not get user from server. Please ensure token is correct and valid and ensure using the correct instance url.')
     try:
         course_number = input('Course Number: ')
         course = canvas.get_course(course_number)
     except Exception as e:
-        cprint('ERROR: Course not found. Please check course number.', 'red')
-        return
+        shut_down('ERROR: Course not found. Please check course number.')
     try:
         assignment_number = input('Assignment Number: ')
         assignment = course.get_assignment(assignment_number)
     except Exception as e:
-        cprint('ERROR: Assignment not found. Please check assignment number.', 'red')
-        return
+        shut_down('ERROR: Assignment not found. Please check assignment number.')
 
     cprint('\nConfirmation:', 'blue')
     print(f'USER:  {user.name}')
@@ -46,19 +53,210 @@ def get_user_inputs():
     confirm = input(
         'Would you like to continue using the above information?[y/n]: ')
 
-    if confirm is 'n':
-        cprint('Exiting', 'red')
-        return
-    elif confirm is 'y':
+    if confirm is 'n' or confirm is 'N':
+        shut_down('Exiting...')
+    elif confirm is 'y' or confirm is 'Y':
         inputs = {
             'token': token,
             'base_url': url,
             'course_number': course_number,
             'assignment_number': assignment_number
         }
-        peer_review(inputs)
+        peer_review(inputs, course, assignment)
     else:
-        cprint('ERROR: Only accepted values are y and n', 'red')
-        return
+        shut_down('ERROR: Only accepted values are y and n')
 
-    print('poo')
+
+def peer_review(inputs, course, assignment):
+    users = course.get_users()
+    rubric_id = assignment.attributes['rubric_settings']['id']
+    rubric = course.get_rubric(
+        rubric_id,
+        include=['peer_assessments'],
+        style='full')
+    assessments_json = rubric.attributes['assessments']
+
+    peer_reviews_json = get_canvas_peer_reviews(
+        inputs['base_url'], inputs['course_number'], inputs['assignment_number'], inputs['token'])
+
+    ap_table = make_assessments_pairing_table(
+        assessments_json, peer_reviews_json, users)
+
+    # UNCOMMENT THIS LINE WHEN DONE WORKING!!
+
+    # CAN REFACTOR - EXTRACT
+    peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
+    peer_reviews_df['Assessor'] = None
+
+    users_json = make_json_list(users)
+    users_df = pd.DataFrame(users_json)
+    overview_df = make_user_table(users_df, peer_reviews_df)
+
+    for outer_index, outer_row in overview_df.iterrows():
+        num_scores_for_user = 0
+        for index, row in ap_table.iterrows():
+            if row['Assessee'] == outer_row['Name']:
+                num_scores_for_user += 1
+                score = row['score']
+                overview_df.at[outer_index,
+                               f'Review: {num_scores_for_user}'] = score
+
+    overview_df = overview_df.drop(['CanvasUserID'], axis=1)
+
+    now = datetime.now()
+    date_time = now.strftime('%m_%d_%Y, %H:%M:%S')
+
+    dir_name = f'{course.name}({date_time})'
+    dir_path = f'data/{dir_name}'
+    os.mkdir(dir_path)
+
+    output_csv(ap_table, dir_path, "assessments")
+    output_csv(overview_df, dir_path, "overview")
+
+
+def make_json_list(object_list):
+    output = []
+    for object in object_list:
+        output.append(object.attributes)
+    return output
+
+
+def output_csv(df, location, file_name):
+    df.to_csv(f'{location}/{file_name}.csv', index=False)
+    cprint(f'{file_name}.csv successfully created in /data', 'green')
+
+
+def make_user_table(users, peer_reviews):
+    df = users[['id', 'name', 'sis_user_id']].rename(
+        columns={'id': 'CanvasUserID', 'name': 'Name', 'sis_user_id': 'SID'})
+    df.insert(3, 'Num Assigned Peer Reviews', None)
+    df.insert(4, 'Num Completed Peer Reviews', None)
+    for index, row in df.iterrows():
+        lookup = lookup_reviews(row['CanvasUserID'], peer_reviews)
+
+        # if (lookup['Assigned'] == 0):
+        #     df.drop(index[index])
+        # else:
+        df.at[index, 'Num Assigned Peer Reviews'] = lookup['Assigned']
+        df.at[index, 'Num Completed Peer Reviews'] = lookup['Completed']
+
+    return df
+
+
+def lookup_reviews(uid, peer_reviews):
+    # print(peer_reviews)
+    # exit()
+    assigned_subset = peer_reviews[peer_reviews['assessor_id'] == uid]
+    completed_subset = assigned_subset[assigned_subset['workflow_state'] == 'completed']
+
+    assigned = len(assigned_subset)
+    completed = len(completed_subset)
+
+    return {
+        'Assigned': assigned,
+        'Completed': completed
+    }
+
+
+def make_assessments_pairing_table(assessments_json, peer_reviews_json, users):
+
+    peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
+    peer_reviews_df['Assessor'] = None
+    peer_reviews_df['Assessee'] = None
+    peer_reviews_df = peer_reviews_df[
+        ['Assessee', 'Assessor', 'user_id', 'assessor_id', 'asset_id']]
+    assessments_df = make_assessments_df(assessments_json)[
+        ['assessor_id', 'artifact_id', 'data', 'score']]
+    assessments_df = expand_items(assessments_df)
+
+    merged_df = pd.merge(peer_reviews_df, assessments_df,
+                         how='left',
+                         left_on=['assessor_id', 'asset_id'],
+                         right_on=['assessor_id', 'artifact_id'])
+
+    merged_df = merged_df.drop(['asset_id', 'artifact_id'], axis=1)
+
+    for index, row in merged_df.iterrows():
+        merged_df.at[index, 'Assessor'] = user_lookup(
+            row['assessor_id'], users)
+        merged_df.at[index, 'Assessee'] = user_lookup(
+            row['user_id'], users)
+
+    merged_df = merged_df.drop(['user_id', 'assessor_id'], axis=1)
+
+    return merged_df
+
+
+def user_lookup(key, users):
+    for user in users:
+        if key == user.id:
+            return user.name
+
+    return 'Not Found'
+
+
+def expand_items(df):
+    pd.options.mode.chained_assignment = None  # default='warn'
+    # print(len(completed_reviews_df[0]['Score by Rubric Item']))
+    for index, row in df.iterrows():
+
+        item_num = 1
+        for item in row['data']:
+            value = item['points']
+            col = 'Item ' + str(item_num)
+            df.at[index, col] = value
+            # reviews_df.at[index, 'Item ' + str(item_num)] = item['points']
+            # print(str(index) + ' ' + str(item_num) + ": " + str(item['points']))
+            item_num += 1
+
+    del df['data']
+
+    return df
+
+
+def get_canvas_peer_reviews(base_url, course_id, assignment_id, token):
+
+     # headers variable for REST API calls
+    headers = {
+        'Authorization': 'Bearer ' + token
+    }
+
+    try:
+        peer_reviews_endpoint = f'{base_url}/api/v1/courses/{course_id}/assignments/{assignment_id}/peer_reviews'
+        peer_reviews = requests.get(peer_reviews_endpoint, headers=headers)
+        peer_reviews.raise_for_status
+        peer_reviews = json.loads(peer_reviews.text)
+        return peer_reviews
+    except Exception as e:
+        shut_down(
+            'ERROR: Could not retrieve peer reviews for specified course and assignment')
+
+
+def make_assessments_df(assessments):
+    if not assessments:
+        shut_down(
+            'Error: there must be at least one completed assessment for the given rubric.')
+
+    for value in assessments:
+        to_delete = value['rubric_association']
+        del to_delete['summary_data']
+
+    return pd.DataFrame(assessments)
+
+
+def make_peer_reviews_df(peer_reviews):
+    df = pd.DataFrame(peer_reviews)
+    # df['user_id'] = df['user_id'].astype(str)
+
+    return df
+
+
+def shut_down(msg):
+    """Shuts down the script
+
+    Args:
+        msg (string): message to print before printing 'Shutting down...' and exiting the script
+    """
+    cprint(msg, 'red')
+    print('Shutting down...')
+    sys.exit()
