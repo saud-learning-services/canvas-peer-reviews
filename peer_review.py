@@ -89,9 +89,8 @@ def peer_review(inputs, course, assignment):
     peer_reviews_json = get_canvas_peer_reviews(
         inputs['base_url'], inputs['course_number'], inputs['assignment_number'], inputs['token'])
 
-    points_possible = rubric.points_possible
     ap_table = make_assessments_pairing_table(
-        assessments_json, peer_reviews_json, users, points_possible)
+        assessments_json, peer_reviews_json, users, rubric)
 
     # CAN REFACTOR - EXTRACT
     peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
@@ -165,7 +164,8 @@ def lookup_reviews(uid, peer_reviews):
     }
 
 
-def make_assessments_pairing_table(assessments_json, peer_reviews_json, users, points_possible):
+def make_assessments_pairing_table(assessments_json, peer_reviews_json, users, rubric):
+    points_possible = rubric.points_possible
     peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
     peer_reviews_df['Assessor'] = None
     peer_reviews_df['Assessee'] = None
@@ -173,9 +173,9 @@ def make_assessments_pairing_table(assessments_json, peer_reviews_json, users, p
         ['Assessee', 'Assessor', 'user_id', 'assessor_id', 'asset_id']]
     assessments_df = make_assessments_df(assessments_json)[
         ['assessor_id', 'artifact_id', 'data', 'score']]
-    assessments_df = expand_items(assessments_df)
+    assessments_df = expand_items(assessments_df, rubric.data)
     assessments_df = assessments_df.rename(
-        columns={'score': f'total_score({points_possible})'})
+        columns={'score': f'Total Score ({points_possible})'})
 
     merged_df = pd.merge(peer_reviews_df, assessments_df,
                          how='left',
@@ -203,23 +203,31 @@ def user_lookup(key, users):
     return 'Not Found'
 
 
-def expand_items(df):
+def expand_items(assessments_df, list_of_rubric_criteria):
     pd.options.mode.chained_assignment = None  # default='warn'
     # print(len(completed_reviews_df[0]['Score by Rubric Item']))
-    for index, row in df.iterrows():
+    for index, row in assessments_df.iterrows():
 
         item_num = 1
         for item in row['data']:
             value = item['points']
-            col = 'Item ' + str(item_num)
-            df.at[index, col] = value
+            col = item['criterion_id']
+            assessments_df.at[index, col] = value
             # reviews_df.at[index, 'Item ' + str(item_num)] = item['points']
             # print(str(index) + ' ' + str(item_num) + ": " + str(item['points']))
             item_num += 1
 
-    del df['data']
+    new_names = {}
+    for crit in list_of_rubric_criteria:
+        crit_id = crit['id']
+        crit_description = crit['description']
+        crit_points = crit['points']
+        new_names[crit_id] = f"{crit_description} ({crit_points})"
+        
+    assessments_df = assessments_df.rename(columns=new_names)
+    del assessments_df['data']
 
-    return df
+    return assessments_df
 
 
 def get_canvas_peer_reviews(base_url, course_id, assignment_id, token):
