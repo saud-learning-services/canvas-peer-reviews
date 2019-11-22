@@ -54,7 +54,7 @@ def main():
         'Would you like to continue using the above information?[y/n]: ')
 
     print('\n')
-    
+
     if confirm is 'n' or confirm is 'N':
         shut_down('Exiting...')
     elif confirm is 'y' or confirm is 'Y':
@@ -70,8 +70,16 @@ def main():
 
 
 def peer_review(inputs, course, assignment):
-    users = course.get_users(enrollment_type=['student'])
-    rubric_id = assignment.attributes['rubric_settings']['id']
+    try:
+        users = course.get_users(enrollment_type=['student'])
+        rubric_id = assignment.attributes['rubric_settings']['id']
+    except KeyError as e:
+        msg = str(e)
+        shut_down(f'Assignment: {assignment.name} has no rubric')
+    except Exception as e:
+        msg = str(e)
+        shut_down(msg)
+
     rubric = course.get_rubric(
         rubric_id,
         include=['peer_assessments'],
@@ -81,10 +89,9 @@ def peer_review(inputs, course, assignment):
     peer_reviews_json = get_canvas_peer_reviews(
         inputs['base_url'], inputs['course_number'], inputs['assignment_number'], inputs['token'])
 
+    points_possible = rubric.points_possible
     ap_table = make_assessments_pairing_table(
-        assessments_json, peer_reviews_json, users)
-
-    # UNCOMMENT THIS LINE WHEN DONE WORKING!!
+        assessments_json, peer_reviews_json, users, points_possible)
 
     # CAN REFACTOR - EXTRACT
     peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
@@ -99,7 +106,7 @@ def peer_review(inputs, course, assignment):
         for index, row in ap_table.iterrows():
             if row['Assessee'] == outer_row['Name']:
                 num_scores_for_user += 1
-                score = row['score']
+                score = row[2]
                 overview_df.at[outer_index,
                                f'Review: {num_scores_for_user}'] = score
 
@@ -146,8 +153,6 @@ def make_user_table(users, peer_reviews):
 
 
 def lookup_reviews(uid, peer_reviews):
-    # print(peer_reviews)
-    # exit()
     assigned_subset = peer_reviews[peer_reviews['assessor_id'] == uid]
     completed_subset = assigned_subset[assigned_subset['workflow_state'] == 'completed']
 
@@ -160,8 +165,7 @@ def lookup_reviews(uid, peer_reviews):
     }
 
 
-def make_assessments_pairing_table(assessments_json, peer_reviews_json, users):
-
+def make_assessments_pairing_table(assessments_json, peer_reviews_json, users, points_possible):
     peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
     peer_reviews_df['Assessor'] = None
     peer_reviews_df['Assessee'] = None
@@ -170,6 +174,8 @@ def make_assessments_pairing_table(assessments_json, peer_reviews_json, users):
     assessments_df = make_assessments_df(assessments_json)[
         ['assessor_id', 'artifact_id', 'data', 'score']]
     assessments_df = expand_items(assessments_df)
+    assessments_df = assessments_df.rename(
+        columns={'score': f'total_score({points_possible})'})
 
     merged_df = pd.merge(peer_reviews_df, assessments_df,
                          how='left',
