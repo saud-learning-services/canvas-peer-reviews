@@ -14,8 +14,6 @@ from IPython.lib.pretty import pretty
 from termcolor import cprint
 from datetime import datetime
 
-# from peer_review_info import peer_review
-
 CANVAS_INSTANCES = ['https://canvas.ubc.ca',
                     'https://ubc.instructure.com',
                     'https://ubc.test.instructure.com',
@@ -112,7 +110,7 @@ def peer_review(inputs, course, assignment):
     overview_df = overview_df.drop(['SID'], axis=1)
 
     now = datetime.now()
-    date_time = now.strftime('%m_%d_%Y, %H:%M:%S')
+    date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
     dir_name = f'{course.name}({date_time})'
     dir_path = f'peer_review_data/{dir_name}'
@@ -223,7 +221,7 @@ def expand_items(assessments_df, list_of_rubric_criteria):
         crit_description = crit['description']
         crit_points = crit['points']
         new_names[crit_id] = f"{crit_description} ({crit_points})"
-        
+
     assessments_df = assessments_df.rename(columns=new_names)
     del assessments_df['data']
 
