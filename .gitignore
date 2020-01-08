@@ -13,6 +13,9 @@ coverage
 # Ignore SASS config files
 .sass-cache
 
+# Ignore python cache
+ __pycache__/
+
 # Keep data directory but ignore contents
 peer_review_data/*
 !peer_review_data/.gitkeep
