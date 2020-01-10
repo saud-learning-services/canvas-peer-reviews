@@ -1,10 +1,20 @@
+"""
+PEER REVIEW SCRIPT
+
+authors:
+@markoprodanovic
+@alisonmyers
+
+last edit:
+Monday, January 9, 2020
+"""
+
 import getpass
 import json
 import time
 import os
 import sys
 from os.path import normcase
-
 import ipywidgets as widgets
 import pandas as pd
 import requests
@@ -113,7 +123,7 @@ def peer_review(inputs, course, assignment):
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
     dir_name = f'{course.name}({date_time})'
-    dir_path = f'peer_review_data/{dir_name}'
+    dir_path = f'../peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
     output_csv(ap_table, dir_path, "peer_review_assessments")

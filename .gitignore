@@ -26,3 +26,6 @@ PeerReview.code-workspace
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints
+
+# Folder containing my legacy code that's not in use anymore
+legacy
