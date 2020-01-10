@@ -14,7 +14,8 @@ coverage
 .sass-cache
 
 # Ignore python cache
- __pycache__/
+ !**/__pycache__/
+ *.pyc
 
 # Keep data directory but ignore contents
 peer_review_data/*
