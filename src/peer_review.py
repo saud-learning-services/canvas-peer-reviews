@@ -36,39 +36,34 @@ def main():
     # get user inputs
     inputs = get_user_inputs()
 
-    peer_review(inputs, settings.course, settings.assignment)
+    # get rubric object
+    rubric = _get_rubric(settings.course, settings.assignment)
 
-
-def peer_review(inputs, course, assignment):
-    try:
-        users = course.get_users(enrollment_type=['student'])
-        rubric_id = assignment.attributes['rubric_settings']['id']
-    except KeyError as e:
-        msg = str(e)
-        shut_down(f'Assignment: {assignment.name} has no rubric')
-    except Exception as e:
-        msg = str(e)
-        shut_down(msg)
-
-    rubric = course.get_rubric(
-        rubric_id,
-        include=['peer_assessments'],
-        style='full')
+    # get assessments JSON - details each complete assessment
     assessments_json = rubric.attributes['assessments']
 
+    # get peer reviews JSON - details each assigned review
     peer_reviews_json = get_canvas_peer_reviews(
-        inputs['base_url'], inputs['course_number'], inputs['assignment_number'], inputs['token'])
+        inputs['base_url'],
+        inputs['course_number'],
+        inputs['assignment_number'],
+        inputs['token']
+    )
 
+    # get students enrolled in course
+    students = settings.course.get_users(enrollment_type=['student'])
+
+    ###================== NOT DONE BELOW ===================###
     ap_table = make_assessments_pairing_table(
-        assessments_json, peer_reviews_json, users, rubric)
+        assessments_json, peer_reviews_json, students, rubric)
 
     # CAN REFACTOR - EXTRACT
     peer_reviews_df = make_peer_reviews_df(peer_reviews_json)
     peer_reviews_df['Assessor'] = None
 
-    users_json = make_json_list(users)
-    users_df = pd.DataFrame(users_json)
-    overview_df = make_user_table(users_df, peer_reviews_df)
+    students_json = make_json_list(students)
+    students_df = pd.DataFrame(students_json)
+    overview_df = make_user_table(students_df, peer_reviews_df)
 
     for outer_index, outer_row in overview_df.iterrows():
         num_scores_for_user = 0
@@ -84,12 +79,60 @@ def peer_review(inputs, course, assignment):
     now = datetime.now()
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
-    dir_name = f'{course.name}({date_time})'
+    dir_name = f'{settings.course.name}({date_time})'
     dir_path = f'../peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
     output_csv(ap_table, dir_path, "peer_review_assessments")
     output_csv(overview_df, dir_path, "peer_review_overview")
+    ###================== NOT DONE ABOVE ==================###
+
+
+def _get_rubric(course, assignment):
+    """ Parses rubric id from assignment object. If found, retrieves rubric with that
+        id from course object. Otherwise, shuts down with error message.
+
+    Args:
+        course (object): Course object - canvasapi
+        assignment (object): Assignment object - canvasapi
+
+    Returns:
+        rubric: Rubric object as specified by canvasapi python wrapper
+    """
+
+    # get rubric id from assignment attributes
+    # throw error and shut down if assignment has no rubric
+    try:
+        rubric_id = assignment.attributes['rubric_settings']['id']
+    except KeyError as e:
+        shut_down(f'Assignment: {assignment.name} has no rubric')
+
+    # get rubric object from course
+    rubric = course.get_rubric(
+        rubric_id,
+        include=['peer_assessments'],
+        style='full')
+
+    return rubric
+
+    # try:
+    #     users = course.get_users(enrollment_type=['student'])
+    #     rubric_id = assignment.attributes['rubric_settings']['id']
+    # except KeyError as e:
+    #     msg = str(e)
+    #     shut_down(f'Assignment: {assignment.name} has no rubric')
+    # except Exception as e:
+    #     msg = str(e)
+    #     shut_down(msg)
+
+    # rubric = course.get_rubric(
+    #     rubric_id,
+    #     include=['peer_assessments'],
+    #     style='full')
+    # assessments_json = rubric.attributes['assessments']
+
+    # peer_reviews_json = get_canvas_peer_reviews(
+    #     inputs['base_url'], inputs['course_number'], inputs['assignment_number'], inputs['token'])
 
 
 def make_json_list(object_list):

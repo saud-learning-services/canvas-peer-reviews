@@ -35,9 +35,12 @@ def get_user_inputs():
         user = canvas.get_user('self')
         cprint(f'\nHello, {user.name}!', 'green')
     except Exception as e:
-        shut_down("""ERROR: could not get user from server. 
-                     Please ensure token is correct and valid 
-                     and ensure using the correct instance url.""")
+        shut_down(
+            """
+            ERROR: could not get user from server.
+            Please ensure token is correct and valid and ensure using the correct instance url.
+            """
+        )
 
     # get course object
     try:
