@@ -1,20 +1,20 @@
 """
-PEER REVIEW SCRIPT
+PEER REVIEW SCRIPT: main
 
 authors:
 @markoprodanovic
 @alisonmyers
 
 last edit:
-Monday, January 9, 2020
+Monday, January 10, 2020
 """
 
-import getpass
 import json
 import time
 import os
-import sys
 from os.path import normcase
+import settings
+
 import ipywidgets as widgets
 import pandas as pd
 import requests
@@ -24,57 +24,19 @@ from IPython.lib.pretty import pretty
 from termcolor import cprint
 from datetime import datetime
 
-CANVAS_INSTANCES = ['https://canvas.ubc.ca',
-                    'https://ubc.instructure.com',
-                    'https://ubc.test.instructure.com',
-                    'https://ubcsandbox.instructure.com']
+from interface import get_user_inputs
+from util import shut_down
 
 
 def main():
 
-    url = input('Canvas Instance URL: ')
-    token = getpass.getpass('Please enter your token: ')
-    canvas = Canvas(url, token)
+    # initialize global variables - call only once
+    settings.init()
 
-    try:
-        user = canvas.get_user('self')
-        cprint(f'\nHello, {user.name}!', 'green')
-    except Exception as e:
-        shut_down('ERROR: could not get user from server. Please ensure token is correct and valid and ensure using the correct instance url.')
-    try:
-        course_number = input('Course Number: ')
-        course = canvas.get_course(course_number)
-    except Exception as e:
-        shut_down('ERROR: Course not found. Please check course number.')
-    try:
-        assignment_number = input('Assignment Number: ')
-        assignment = course.get_assignment(assignment_number)
-    except Exception as e:
-        shut_down('ERROR: Assignment not found. Please check assignment number.')
+    # get user inputs
+    inputs = get_user_inputs()
 
-    cprint('\nConfirmation:', 'blue')
-    print(f'USER:  {user.name}')
-    print(f'COURSE:  {course.name}')
-    print(f'ASSIGNMENT:  {assignment.name}')
-    print('\n')
-
-    confirm = input(
-        'Would you like to continue using the above information?[y/n]: ')
-
-    print('\n')
-
-    if confirm is 'n' or confirm is 'N':
-        shut_down('Exiting...')
-    elif confirm is 'y' or confirm is 'Y':
-        inputs = {
-            'token': token,
-            'base_url': url,
-            'course_number': course_number,
-            'assignment_number': assignment_number
-        }
-        peer_review(inputs, course, assignment)
-    else:
-        shut_down('ERROR: Only accepted values are y and n')
+    peer_review(inputs, settings.course, settings.assignment)
 
 
 def peer_review(inputs, course, assignment):
@@ -273,14 +235,3 @@ def make_peer_reviews_df(peer_reviews):
     # df['user_id'] = df['user_id'].astype(str)
 
     return df
-
-
-def shut_down(msg):
-    """Shuts down the script
-
-    Args:
-        msg (string): message to print before printing 'Shutting down...' and exiting the script
-    """
-    cprint(f'\n{msg}\n', 'red')
-    print('Shutting down...')
-    sys.exit()
