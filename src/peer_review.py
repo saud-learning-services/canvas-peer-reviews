@@ -6,7 +6,7 @@ authors:
 @alisonmyers
 
 last edit:
-Monday, January 12, 2020
+Monday, January 13, 2020
 """
 
 import json
@@ -23,7 +23,7 @@ from IPython.lib.pretty import pretty
 from termcolor import cprint
 from datetime import datetime
 
-from dataframe_builder import make_assessments_df
+from dataframe_builder import make_assessments_df, make_overview_df
 from interface import get_user_inputs
 from util import shut_down
 import settings
@@ -64,37 +64,11 @@ def main():
         rubric
     )
 
-    ###================== NOT DONE BELOW ===================###
+    # make overview dataframe - see docstring for schema
+    overview_df = make_overview_df(assessments_df, peer_reviews_json, students)
 
-    # CAN REFACTOR - EXTRACT
-    peer_reviews_df = pd.DataFrame(peer_reviews_json)
-    peer_reviews_df['Assessor'] = None
-
-    students_json = make_json_list(students)
-    students_df = pd.DataFrame(students_json)
-    overview_df = make_user_table(students_df, peer_reviews_df)
-
-    for outer_index, outer_row in overview_df.iterrows():
-        num_scores_for_user = 0
-        for index, row in assessments_df.iterrows():
-            if row['Assessee'] == outer_row['Name']:
-                num_scores_for_user += 1
-                score = row[2]
-                overview_df.at[outer_index,
-                               f'Review: {num_scores_for_user}'] = score
-
-    overview_df = overview_df.drop(['SID'], axis=1)
-
-    now = datetime.now()
-    date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
-
-    dir_name = f'{settings.course.name}({date_time})'
-    dir_path = f'../peer_review_data/{dir_name}'
-    os.mkdir(dir_path)
-
-    output_csv(assessments_df, dir_path, "peer_review_assessments")
-    output_csv(overview_df, dir_path, "peer_review_overview")
-    ###================== NOT DONE ABOVE ==================###
+    # output the dataframes to csv's in /peer_review_data directory
+    _create_output_tables(assessments_df, overview_df)
 
 
 def _get_rubric(course, assignment):
@@ -196,46 +170,21 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
 
     return peer_reviews
 
-###================== NOT DONE BELOW ==================###
+
+def _create_output_tables(assessments_df, overview_df):
+    """TODO
+    """
+    now = datetime.now()
+    date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
+
+    dir_name = f'{settings.course.name}, {settings.assignment.name} ({date_time})'
+    dir_path = f'../peer_review_data/{dir_name}'
+    os.mkdir(dir_path)
+
+    _output_csv(assessments_df, dir_path, "peer_review_assessments")
+    _output_csv(overview_df, dir_path, "peer_review_overview")
 
 
-def make_json_list(object_list):
-    output = []
-    for object in object_list:
-        output.append(object.attributes)
-    return output
-
-
-def output_csv(df, location, file_name):
+def _output_csv(df, location, file_name):
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
-
-
-def make_user_table(users, peer_reviews):
-    df = users[['id', 'name', 'sis_user_id']].rename(
-        columns={'id': 'CanvasUserID', 'name': 'Name', 'sis_user_id': 'SID'})
-    df.insert(3, 'Num Assigned Peer Reviews', None)
-    df.insert(4, 'Num Completed Peer Reviews', None)
-    for index, row in df.iterrows():
-        lookup = lookup_reviews(row['CanvasUserID'], peer_reviews)
-
-        # if (lookup['Assigned'] == 0):
-        #     df.drop(index[index])
-        # else:
-        df.at[index, 'Num Assigned Peer Reviews'] = lookup['Assigned']
-        df.at[index, 'Num Completed Peer Reviews'] = lookup['Completed']
-
-    return df
-
-
-def lookup_reviews(uid, peer_reviews):
-    assigned_subset = peer_reviews[peer_reviews['assessor_id'] == uid]
-    completed_subset = assigned_subset[assigned_subset['workflow_state'] == 'completed']
-
-    assigned = len(assigned_subset)
-    completed = len(completed_subset)
-
-    return {
-        'Assigned': assigned,
-        'Completed': completed
-    }

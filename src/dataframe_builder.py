@@ -5,13 +5,12 @@ authors:
 @markoprodanovic
 
 last edit:
-Monday, January 12, 2020
+Monday, January 13, 2020
 """
 
+import math
 import pprint as pp
-
 import pandas as pd
-
 from util import shut_down
 
 
@@ -56,7 +55,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
             crit_description = crit['description']
             crit_points = crit['points']
             column_name = f"{crit_description} ({crit_points})"
-            peer_reviews_df[column_name] = ""
+            peer_reviews_df[column_name] = None
             assessments_df = peer_reviews_df.drop(['asset_id'], axis=1)
     else:
         # make completed assessments DataFrame
@@ -89,6 +88,31 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
     assessments_df = assessments_df.drop(['user_id', 'assessor_id'], axis=1)
 
     return assessments_df
+
+
+def make_overview_df(assessments_df, peer_reviews_json, students):
+    """TODO
+    """
+    peer_reviews_df = pd.DataFrame(peer_reviews_json)
+    students_df = _make_students_df(students)
+
+    # make dataframe detailing # assigned, # completed peer reviews per student
+    overview_df = _make_assigned_completed_df(students_df, peer_reviews_df)
+
+    # for each student check if they have any complete reviews and if so,
+    # add a column "Review #" and set the cell value to their score
+    for outer_index, outer_row in overview_df.iterrows():
+        num_scores_for_user = 0
+        for index, row in assessments_df.iterrows():
+            if row['Assessee'] == outer_row['Name'] and row[2] is not None:
+                num_scores_for_user += 1
+                score = row[2]
+                overview_df.at[outer_index,
+                               f'Review: {num_scores_for_user}'] = score
+
+    overview_df = overview_df.drop(['SID'], axis=1)
+
+    return overview_df
 
 
 def _user_lookup(key, users):
@@ -142,7 +166,9 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
     # criterion id (expanding that data cell into separate columns)
     for index, row in assessments_df.iterrows():
         for item in row['data']:
-            value = item['points']
+            value = None
+            if not math.isnan(item['points']):
+                value = item['points']
             col = item['criterion_id']
             assessments_df.at[index, col] = value
 
@@ -165,3 +191,58 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
     del assessments_df['data']
 
     return assessments_df
+
+
+def _make_students_df(paginated_list_of_students):
+    """Given a paginated list of canvasapi objects, iterate through each item,
+       take the JSON used to create that object and append to an output list.
+       Finally, convert that list to a DataFrame and return.
+
+    Args:
+        paginated_list_of_student (paginated list of type User -- canvasapi): List of User objects
+
+    Returns:
+        students_df (DataFrame): table containing each student in given course
+    """
+    students = []
+    for student in paginated_list_of_students:
+        students.append(student.attributes)
+
+    students_df = pd.DataFrame(students)
+    return students_df
+
+
+def _make_assigned_completed_df(students_df, peer_reviews_df):
+    """TODO
+    """
+    pruned_df = students_df[['id', 'name', 'sis_user_id']]
+
+    df = pruned_df.rename(
+        columns={'id': 'CanvasUserID',
+                 'name': 'Name',
+                 'sis_user_id': 'SID'})
+
+    df.insert(3, 'Num Assigned Peer Reviews', None)
+    df.insert(4, 'Num Completed Peer Reviews', None)
+
+    for index, row in df.iterrows():
+        lookup = _lookup_reviews(row['CanvasUserID'], peer_reviews_df)
+        df.at[index, 'Num Assigned Peer Reviews'] = lookup['Assigned']
+        df.at[index, 'Num Completed Peer Reviews'] = lookup['Completed']
+
+    return df
+
+
+def _lookup_reviews(uid, peer_reviews):
+    """TODO
+    """
+    assigned_subset = peer_reviews[peer_reviews['assessor_id'] == uid]
+    completed_subset = assigned_subset[assigned_subset['workflow_state'] == 'completed']
+
+    assigned = len(assigned_subset)
+    completed = len(completed_subset)
+
+    return {
+        'Assigned': assigned,
+        'Completed': completed
+    }
