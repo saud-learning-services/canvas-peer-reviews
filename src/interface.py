@@ -34,6 +34,8 @@ def get_user_inputs():
     try:
         user = canvas.get_user('self')
         cprint(f'\nHello, {user.name}!', 'green')
+        # pp.pprint(user.attributes)
+        # shut_down('TEMP KILL SWITCH')
     except Exception as e:
         shut_down(
             """

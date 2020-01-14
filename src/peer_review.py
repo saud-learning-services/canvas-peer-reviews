@@ -6,28 +6,25 @@ authors:
 @alisonmyers
 
 last edit:
-Monday, January 13, 2020
+Monday, January 14, 2020
 """
 
-import json
-import time
-import os
+from datetime import datetime
 from os.path import normcase
-
-import ipywidgets as widgets
+from canvasapi import Canvas
+from termcolor import cprint
 import pandas as pd
 import requests
-from canvasapi import Canvas
-from IPython.display import display
-from IPython.lib.pretty import pretty
-from termcolor import cprint
-from datetime import datetime
+import time
+import json
+import os
 
 from dataframe_builder import make_assessments_df, make_overview_df
 from interface import get_user_inputs
 from util import shut_down
 import settings
 
+# used to print formatted JSON to jupyter (for testing)
 import pprint as pp
 
 
@@ -172,7 +169,12 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
 
 
 def _create_output_tables(assessments_df, overview_df):
-    """TODO
+    """ Outputs dataframes to .csv files in /peer_review_data directory
+
+    Args:
+        assessments_df (DataFrame): Assessments table for output
+        overview_df (DataFrame): Overview table for output
+
     """
     now = datetime.now()
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
@@ -186,5 +188,12 @@ def _create_output_tables(assessments_df, overview_df):
 
 
 def _output_csv(df, location, file_name):
+    """ Writes CSV to location with file_name
+
+    Args:
+        df (DataFrame): Table to output
+        location (string): filepath to output directory
+        file_name (string): name to give file "example" => "example.csv"
+    """
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')

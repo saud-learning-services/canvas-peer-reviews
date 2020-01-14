@@ -5,7 +5,7 @@ authors:
 @markoprodanovic
 
 last edit:
-Monday, January 13, 2020
+Monday, January 14, 2020
 """
 
 import math
@@ -91,7 +91,25 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
 
 
 def make_overview_df(assessments_df, peer_reviews_json, students):
-    """TODO
+    """Makes overview dataframe with following schema:
+
+    ~~COLUMNS~~
+    Canvas User ID: The user id of the student as it appears on Canvas.
+    Name: The student's name
+    Num Assigned Peer Reviews: The number of peer reviews that have been assigned to the student.
+    Num Completed Peer Reviews: The number of peer reviews that have been completed by the student.
+    Review: review_number: The score the student has been awarded from a single peer review 
+            (blank if review is not complete). Will be as many columns as there are completed 
+            peer reviews for a particular student (1...n) review_number will count up from 1 
+            to help identify one review from another.
+
+    Args:
+        assessments_df (DataFrame): Completed assessments
+        peer_reviews_json (JSON): Assigned peer reviews
+        students (list of Student - canvasapi): list of Student obj
+
+    Returns:
+        overview_df (DataFrame):
     """
     peer_reviews_df = pd.DataFrame(peer_reviews_json)
     students_df = _make_students_df(students)
@@ -213,7 +231,17 @@ def _make_students_df(paginated_list_of_students):
 
 
 def _make_assigned_completed_df(students_df, peer_reviews_df):
-    """TODO
+    """Creates a table with one row per student. Columns for Canvas ID, name, sid,
+       number of assigned peer reviews and number of completed peer reviews.
+
+    Args:
+        students_df (DataFrame): Students table
+        peer_reviews_df (DataFrame): Peer reviews table
+
+    Returns:
+        df (DataFrame): Table with one row per student num assigned num
+        completed columns
+
     """
     pruned_df = students_df[['id', 'name', 'sis_user_id']]
 
@@ -234,7 +262,18 @@ def _make_assigned_completed_df(students_df, peer_reviews_df):
 
 
 def _lookup_reviews(uid, peer_reviews):
-    """TODO
+    """Given a user id (uid), finds number of assigned and completed peer reviews
+       for that given student in the peer_reviews table. Returns dictionary with
+       'Assigned' and 'Completed' counts.
+
+    Args:
+        uid (int): User id to search for
+        peer_reviews (DataFrame): Peer reviews table
+
+    Returns:
+        Dictionary with two keys, 'Assigned' and 'Completed' with
+        number of assigned/completed peer reviews as values
+
     """
     assigned_subset = peer_reviews[peer_reviews['assessor_id'] == uid]
     completed_subset = assigned_subset[assigned_subset['workflow_state'] == 'completed']
