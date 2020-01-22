@@ -193,7 +193,7 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
                 col = item['criterion_id']
                 assessments_df.at[index, col] = value
         except Exception as e:
-            pp.pprint(item)
+            print(row)
 
     # Make object matching criterion id (keys) to more descriptive column names
     # EX.
