@@ -65,6 +65,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
              'data',
              'score']
         ]
+
         completed_assessments_df = _expand_criteria_to_columns(
             completed_assessments_df,
             rubric.data
@@ -182,13 +183,17 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
     # For each row, step through row['data'] object. For every criteria,
     # take the points that have been awarded and put into column with that
     # criterion id (expanding that data cell into separate columns)
+
     for index, row in assessments_df.iterrows():
-        for item in row['data']:
-            value = None
-            if not math.isnan(item['points']):
-                value = item['points']
-            col = item['criterion_id']
-            assessments_df.at[index, col] = value
+        try:
+            for item in row['data']:
+                value = None
+                if not math.isnan(item['points']):
+                    value = item['points']
+                col = item['criterion_id']
+                assessments_df.at[index, col] = value
+        except Exception as e:
+            pp.pprint(item)
 
     # Make object matching criterion id (keys) to more descriptive column names
     # EX.
