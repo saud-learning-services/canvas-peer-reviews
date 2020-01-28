@@ -5,13 +5,13 @@ authors:
 @markoprodanovic
 
 last edit:
-Monday, January 14, 2020
+Sunday, January 26, 2020
 """
 
 import math
 import pprint as pp
 import pandas as pd
-from util import shut_down
+from util import shut_down, print_error
 
 
 def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
@@ -20,16 +20,16 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
     ~~COLUMNS~~
     Assessee: Name of the student who's work is being evaluated.
     Assessor: Name of the student who is evaluating the assessee.
-    Total Score ({points_possible}): The total score given by the assessor 
-                                    to the assessee, where points possible 
-                                    is the maximum possible score for the 
+    Total Score ({points_possible}): The total score given by the assessor
+                                    to the assessee, where points possible
+                                    is the maximum possible score for the
                                     assignment.
-    {criteria_description} ({criteria_points}): The score breakdown per criteria 
-                                    item as they appear in the rubric. Will be 
-                                    as many columns as criteria items in rubric 
-                                    (1...n). criteria_description will be the 
-                                    the heading of a single rubric item and 
-                                    criteria_points is the maximum possible 
+    {criteria_description} ({criteria_points}): The score breakdown per criteria
+                                    item as they appear in the rubric. Will be
+                                    as many columns as criteria items in rubric
+                                    (1...n). criteria_description will be the
+                                    the heading of a single rubric item and
+                                    criteria_points is the maximum possible
                                     score for that item.
 
     Args:
@@ -43,7 +43,8 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
                                     output table.
     """
     peer_reviews_df = pd.DataFrame(peer_reviews_json)
-    peer_reviews_df = peer_reviews_df[['user_id', 'assessor_id', 'asset_id']]
+    peer_reviews_df = peer_reviews_df[[
+        'user_id', 'assessor_id', 'asset_id', 'workflow_state']]
     peer_reviews_df['Assessor'] = None
     peer_reviews_df['Assessee'] = None
 
@@ -65,6 +66,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
              'data',
              'score']
         ]
+
         completed_assessments_df = _expand_criteria_to_columns(
             completed_assessments_df,
             rubric.data
@@ -86,6 +88,10 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
             row['user_id'], users)
 
     assessments_df = assessments_df.drop(['user_id', 'assessor_id'], axis=1)
+    assessments_df = assessments_df.rename(
+        columns={
+            'workflow_state': 'State'
+        })
 
     return assessments_df
 
@@ -98,9 +104,9 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     Name: The student's name
     Num Assigned Peer Reviews: The number of peer reviews that have been assigned to the student.
     Num Completed Peer Reviews: The number of peer reviews that have been completed by the student.
-    Review: review_number: The score the student has been awarded from a single peer review 
-            (blank if review is not complete). Will be as many columns as there are completed 
-            peer reviews for a particular student (1...n) review_number will count up from 1 
+    Review: review_number: The score the student has been awarded from a single peer review
+            (blank if review is not complete). Will be as many columns as there are completed
+            peer reviews for a particular student (1...n) review_number will count up from 1
             to help identify one review from another.
 
     Args:
@@ -122,9 +128,9 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     for outer_index, outer_row in overview_df.iterrows():
         num_scores_for_user = 0
         for index, row in assessments_df.iterrows():
-            if row['Assessee'] == outer_row['Name'] and row[2] is not None:
+            if row['Assessee'] == outer_row['Name'] and row[3] is not None:
                 num_scores_for_user += 1
-                score = row[2]
+                score = row[3]
                 overview_df.at[outer_index,
                                f'Review: {num_scores_for_user}'] = score
 
@@ -148,7 +154,7 @@ def _user_lookup(key, users):
         if key == user.id:
             return user.name
 
-    return 'Not Found'
+    return 'User Not Found'
 
 
 def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
@@ -159,8 +165,8 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
        ASSESSMENTS (BEFORE):
          assessor_id | artifact_id | data                 | score
          2907        | 198867      | {'id': None,         | 35
-                                      'points': 12.0, 
-                                      'criterion_id': 
+                                      'points': 12.0,
+                                      'criterion_id':
                                       'description':
                                       "Quality of Writing"
                                       ...
@@ -182,13 +188,24 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
     # For each row, step through row['data'] object. For every criteria,
     # take the points that have been awarded and put into column with that
     # criterion id (expanding that data cell into separate columns)
+
     for index, row in assessments_df.iterrows():
         for item in row['data']:
-            value = None
-            if not math.isnan(item['points']):
+            points_error_flag = False
+            try:
                 value = item['points']
+                if math.isnan(value):
+                    value = None
+            except Exception as e:
+                points_error_flag = True
+                value = None
+
             col = item['criterion_id']
             assessments_df.at[index, col] = value
+
+        if points_error_flag:
+            msg = 'There is at least one row of data where a reviewing student did not enter valid data into the rubric. Please review the final output.'
+            print_error(msg)
 
     # Make object matching criterion id (keys) to more descriptive column names
     # EX.

@@ -180,7 +180,7 @@ def _create_output_tables(assessments_df, overview_df):
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
     dir_name = f'{settings.course.name}, {settings.assignment.name} ({date_time})'
-    dir_path = f'../peer_review_data/{dir_name}'
+    dir_path = f'./peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
     _output_csv(assessments_df, dir_path, "peer_review_assessments")
