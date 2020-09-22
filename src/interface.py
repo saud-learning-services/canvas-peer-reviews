@@ -98,9 +98,9 @@ def _prompt_for_confirmation(user_name, course_name, assignment_name):
 
     print('\n')
 
-    if confirm is 'y' or confirm is 'Y':
+    if confir == 'y' or confirm == 'Y':
         return
-    elif confirm is 'n' or confirm is 'N':
+    elif confirm == 'n' or confirm == 'N':
         shut_down('Exiting...')
     else:
         shut_down('ERROR: Only accepted values are y and n')

@@ -1,6 +1,8 @@
 .vscode
 coverage
 
+__pycache__
+
 # Ignore Mac system files
 .DS_store
 
