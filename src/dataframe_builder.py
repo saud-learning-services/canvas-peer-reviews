@@ -50,6 +50,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
 
     points_possible = rubric.points_possible
 
+    assessments_df = None
     if not assessments_json:
         # make table with no assessment data (empty cells)
         for crit in rubric.data:

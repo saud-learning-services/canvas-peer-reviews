@@ -30,9 +30,6 @@ import pprint as pp
 
 def main():
 
-    # initialize global variables - call only once
-    settings.init()
-
     # get user inputs
     inputs = get_user_inputs()
 
