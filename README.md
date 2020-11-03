@@ -61,7 +61,7 @@ _Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learn
 #### Every Time
 
 1. Run
-   1. `$ conda activate peer-review-info`
+   1. `$ conda activate canvas-peer-reviews`
    1. `$ jupyter notebook`
    1. The previous command will have opened up a tab in your browser, select **Canvas Peer Reviews.ipynb** and follow the instructions listed.
 
