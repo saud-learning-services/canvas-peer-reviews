@@ -22,6 +22,7 @@ __pycache__
 # Keep data directory but ignore contents
 peer_review_data/*
 !peer_review_data/.gitkeep
+!peer_review_data/Sample*
 
 # Ignore VSCode files
 PeerReview.code-workspace

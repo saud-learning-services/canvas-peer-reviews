@@ -5,10 +5,11 @@ channels:
   - defaults
 dependencies:
   - termcolor
+  - python>=3.7.0
   - requests
   - jupyter
   - pandas
   - pip
   - pip:
-      - canvasapi==0.15.0
-       - pick
+      - canvasapi>=2.0.0
+      - pick

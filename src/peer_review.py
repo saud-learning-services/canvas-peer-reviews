@@ -15,6 +15,7 @@ from canvasapi import Canvas
 from termcolor import cprint
 import pandas as pd
 import requests
+from pprint import pprint
 import time
 import json
 import os
@@ -80,7 +81,10 @@ def _get_rubric(course, assignment):
     # get rubric id from assignment attributes
     # throw error and shut down if assignment has no rubric
     try:
-        rubric_id = assignment.attributes['rubric_settings']['id']
+        rubric_id = assignment.rubric_settings['id']
+
+        # depreciated sytax - remove soon
+        # rubric_id = assignment.attributes['rubric_settings']['id']
     except KeyError as e:
         shut_down(f'Assignment: {assignment.name} has no rubric')
 
@@ -123,7 +127,10 @@ def _get_assessments_json(rubric):
     """
 
     try:
-        assessments_json = rubric.attributes['assessments']
+        assessments_json = rubric.assessments
+
+        # depreciated sytax - remove soon
+        # assessments_json = rubric.attributes['assessments']
     except AttributeError:
         shut_down('ERROR: Rubric JSON object has no assessments field.')
 
