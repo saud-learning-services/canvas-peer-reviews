@@ -35,7 +35,7 @@ def main():
     inputs = get_user_inputs()
 
     # get rubric object
-    rubric = _get_rubric(settings.course, settings.assignment)
+    rubric = _get_rubric(settings.COURSE, settings.ASSIGNMENT)
 
     # get assessments JSON - details each complete assessment (could be empty)
     assessments_json = _get_assessments_json(rubric)
@@ -49,7 +49,7 @@ def main():
     )
 
     # get students enrolled in course
-    students = _get_students(settings.course)
+    students = _get_students(settings.COURSE)
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
@@ -183,7 +183,7 @@ def _create_output_tables(assessments_df, overview_df):
     now = datetime.now()
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
-    dir_name = f'{settings.course.name}, {settings.assignment.name} ({date_time})'
+    dir_name = f'{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})'
     dir_path = f'./peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
