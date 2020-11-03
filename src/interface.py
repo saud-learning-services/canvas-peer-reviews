@@ -34,7 +34,6 @@ def get_user_inputs():
     try:
         user = canvas.get_user('self')
         cprint(f'\nHello, {user.name}!', 'green')
-        # pp.pprint(user.attributes)
         # shut_down('TEMP KILL SWITCH')
     except Exception as e:
         shut_down(
@@ -62,8 +61,8 @@ def get_user_inputs():
     _prompt_for_confirmation(user.name, course.name, assignment.name)
 
     # set course and assignment objects to global variables
-    settings.course = course
-    settings.assignment = assignment
+    settings.COURSE = course
+    settings.ASSIGNMENT = assignment
 
     # return inputs dictionary
     return {

@@ -9,8 +9,9 @@ Sunday, January 26, 2020
 """
 
 import math
-import pprint as pp
+from pprint import pprint
 import pandas as pd
+import sys
 from util import shut_down, print_error
 
 
@@ -50,6 +51,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
 
     points_possible = rubric.points_possible
 
+    assessments_df = None
     if not assessments_json:
         # make table with no assessment data (empty cells)
         for crit in rubric.data:
@@ -241,7 +243,17 @@ def _make_students_df(paginated_list_of_students):
     """
     students = []
     for student in paginated_list_of_students:
-        students.append(student.attributes)
+        # replaced depreciated student.attributes sytax
+        attributes = {
+            'created_at': student.created_at,
+            'id': student.id,
+            'integration_id': student.integration_id,
+            'login_id': student.login_id,
+            'name': student.name,
+            'short_name': student.short_name,
+            'sis_user_id': student.sis_user_id,
+            'sortable_name': student.sortable_name}
+        students.append(attributes)
 
     students_df = pd.DataFrame(students)
     return students_df

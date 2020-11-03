@@ -15,6 +15,7 @@ from canvasapi import Canvas
 from termcolor import cprint
 import pandas as pd
 import requests
+from pprint import pprint
 import time
 import json
 import os
@@ -30,14 +31,11 @@ import pprint as pp
 
 def main():
 
-    # initialize global variables - call only once
-    settings.init()
-
     # get user inputs
     inputs = get_user_inputs()
 
     # get rubric object
-    rubric = _get_rubric(settings.course, settings.assignment)
+    rubric = _get_rubric(settings.COURSE, settings.ASSIGNMENT)
 
     # get assessments JSON - details each complete assessment (could be empty)
     assessments_json = _get_assessments_json(rubric)
@@ -51,7 +49,7 @@ def main():
     )
 
     # get students enrolled in course
-    students = _get_students(settings.course)
+    students = _get_students(settings.COURSE)
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
@@ -83,7 +81,10 @@ def _get_rubric(course, assignment):
     # get rubric id from assignment attributes
     # throw error and shut down if assignment has no rubric
     try:
-        rubric_id = assignment.attributes['rubric_settings']['id']
+        rubric_id = assignment.rubric_settings['id']
+
+        # depreciated sytax - remove soon
+        # rubric_id = assignment.attributes['rubric_settings']['id']
     except KeyError as e:
         shut_down(f'Assignment: {assignment.name} has no rubric')
 
@@ -126,7 +127,10 @@ def _get_assessments_json(rubric):
     """
 
     try:
-        assessments_json = rubric.attributes['assessments']
+        assessments_json = rubric.assessments
+
+        # depreciated sytax - remove soon
+        # assessments_json = rubric.attributes['assessments']
     except AttributeError:
         shut_down('ERROR: Rubric JSON object has no assessments field.')
 
@@ -179,7 +183,7 @@ def _create_output_tables(assessments_df, overview_df):
     now = datetime.now()
     date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
 
-    dir_name = f'{settings.course.name}, {settings.assignment.name} ({date_time})'
+    dir_name = f'{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})'
     dir_path = f'./peer_review_data/{dir_name}'
     os.mkdir(dir_path)
 
