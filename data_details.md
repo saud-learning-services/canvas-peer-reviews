@@ -1,17 +1,3 @@
-# Peer Review Info
-
-## Summary
-*Peer Review Info* is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing Canvas peer review data. Upon providing the necessary inputs, the notebook will produce two .csv files in the "peer_review_data" folder (in project root directory). The data tables will give users an overview all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments.
----
-
-## Input
-* Base URL *(Instance of Canvas being used - ex. canvas.ubc.ca)*
-* Canvas Token *(generate through Account => Settings)*
-* Course ID *(last digits of URL when visiting course page)*
-* Assignment ID *(last digits of URL when visiting assignment page)*
-
-## Output
-
 ### peer_review_assessments.csv:
 *Lists all assigned assessments including roles of assessee/assessor, total score and score given for each rubric item (Note: all columns pertaining to score will be blank if a review is not completed yet).*
 
@@ -32,7 +18,3 @@
 * **Review: ```review_number```:** The score the student has been awarded from a single peer review (blank if review is not complete). Will be as many columns as there are completed peer reviews for a particular student **(1...n)** ```review_number``` will count up from 1 to help identify one review from another.
 
 > **Note:** we have noticed that some students have trouble with the Canvas rubrics in peer review and there is no option for them to adjust their reviews once completed. We strongly recommend reviewing the data for inconsistent scores, and double checking those inconsistencies in the Canvas Peer Review for the assignment. 
-
----
-
-*authors: @markoprodanovic @alisonmyers*
