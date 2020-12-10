@@ -201,3 +201,6 @@ def _output_csv(df, location, file_name):
     """
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
+
+if __name__ == "__main__":
+    main()
