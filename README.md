@@ -11,6 +11,8 @@ _Canvas Peer Reviews_ is a Jupyter Notebook and Python script that works with Ca
 
 > :warning: There is no equivalent functionality in the Canvas interface for easily accessing this data. Peer Reviews in Canvas can be odd, and the rubric behaviour is not always intuitive for students. Instructors should review the peer review data provided before making any grading decisions, in particular any cases where a review has a score of 0.
 
+> **Note:** we have noticed that some students have trouble with the Canvas rubrics in peer review and there is no option for them to adjust their reviews once completed. We strongly recommend reviewing the data for inconsistent scores, and double checking those inconsistencies in the Canvas Peer Review for the assignment. 
+
 ---
 
 ## Inputs
