@@ -4,10 +4,11 @@
 > - ops-run-with: jupyter
 > - python>=3.7
 > - canvasapi>=2.0.0
+> - supports universal environment 🌎
 
 ## Summary
 
-_Canvas Peer Reviews_ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the notebook will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments.
+__Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the notebook will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments.
 
 > :warning: There is no equivalent functionality in the Canvas interface for easily accessing this data. Peer Reviews in Canvas can be odd, and the rubric behaviour is not always intuitive for students. Instructors should review the peer review data provided before making any grading decisions, in particular any cases where a review has a score of 0, or the scores seem inconsistent. Where inconsistencies exist in the data, we recommend reviewing in the Canvas interface.
 
@@ -15,7 +16,7 @@ _Canvas Peer Reviews_ is a Jupyter Notebook and Python script that works with Ca
 
 ## Inputs
 
-- Base URL _(Instance of Canvas being used - ex. canvas.ubc.ca)_
+- Base URL _(Instance of Canvas being used - ex. https://ubc.instructure.com)_
 - Canvas Token _(generate through Account => Settings)_
 - Course ID _(last digits of URL when visiting course page)_
 - Assignment ID _(last digits of URL when visiting assignment page)_
@@ -46,7 +47,7 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 
 ### Sauder Operations
 
-_Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learning-services/instructions-and-other-templates/blob/master/sauder-ops-guide-jupyter-env-and-launch.md#-ran-it-before-start-here) for detailed instructions to run in Jupyter._
+_Are you Sauder Operations Staff? Please go [here](TODO) for detailed instructions to run in Jupyter._
 
 ### General (terminal instructions)
 
