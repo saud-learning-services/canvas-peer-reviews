@@ -47,7 +47,7 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 
 ### Sauder Operations
 
-_Are you Sauder Operations Staff? Please go [here](TODO) for detailed instructions to run in Jupyter._
+_Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learning-services/instructions-and-other-templates/blob/main/docs/running-instructions.md) for detailed instructions to run in Jupyter._
 
 ### General (terminal instructions)
 
