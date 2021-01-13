@@ -63,8 +63,8 @@ _Are you Sauder Operations Staff? Please go [here](TODO) for detailed instructio
 
 1. Run
    1. `$ conda activate canvas-peer-reviews`
-   1. `$ jupyter notebook`
-   1. The previous command will have opened up a tab in your browser, select **Canvas Peer Reviews.ipynb** and follow the instructions listed.
+   1. `python src/peer_review.py`
+   1. Follow terminal prompts
 
 ---
 
