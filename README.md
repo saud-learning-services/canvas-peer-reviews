@@ -44,15 +44,9 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 - **Review: `review_number`:** The score the student has been awarded from a single peer review (blank if review is not complete). Will be as many columns as there are completed peer reviews for a particular student **(1...n)** `review_number` will count up from 1 to help identify one review from another.
 
 ## Getting Started
-
-### Sauder Operations
-
-## Getting Started
-
 ### Sauder Operations
 
 _Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learning-services/instructions-and-other-templates/blob/main/docs/running-instructions.md) for detailed instructions to run in Jupyter. ("The Project", or "the-project" is "canvas-peer-reviews" or "Canvas Peer Reviews")._
-
 
 ### General (terminal instructions)
 
