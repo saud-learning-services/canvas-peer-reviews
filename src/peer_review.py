@@ -182,7 +182,7 @@ def _create_output_tables(assessments_df, overview_df):
 
     """
     now = datetime.now()
-    date_time = now.strftime('%m:%d:%Y, %H.%M.%S')
+    date_time = now.strftime('%m-%d-%Y, %H.%M.%S')
 
     dir_name = f'{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})'
     dir_path = Path(f'./peer_review_data/{dir_name}')
