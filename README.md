@@ -8,7 +8,7 @@
 
 ## Summary
 
-__Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the notebook will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments.
+__Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the script will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments. When executed, the notebook/script will also prompt about a optional third .csv containing non-peer-reviewed scores for the given assignment.
 
 > :warning: There is no equivalent functionality in the Canvas interface for easily accessing this data. Peer Reviews in Canvas can be odd, and the rubric behaviour is not always intuitive for students. Instructors should review the peer review data provided before making any grading decisions, in particular any cases where a review has a score of 0, or the scores seem inconsistent. Where inconsistencies exist in the data, we recommend reviewing in the Canvas interface.
 
@@ -20,6 +20,7 @@ __Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with 
 - Canvas Token _(generate through Account => Settings)_
 - Course ID _(last digits of URL when visiting course page)_
 - Assignment ID _(last digits of URL when visiting assignment page)_
+- To include the assignment scores if graded in addition to peer reviewed (generates additional csv) _(y/n)_
 
 ## Output
 
@@ -37,12 +38,18 @@ _Lists all assigned assessments including roles of assessee/assessor, total scor
 
 _Lists each student in the course by canvas user id and name, shows # of assigned peer reviews as well as # of completed reviews; for each student, if that student has been evaluated, their scores will appear in the "Review" columns._
 
-- **Canvas User ID:** The user id of the student as it appears on Canvas.
+- **CanvasUserID:** The user id of the student as it appears on Canvas.
 - **Name:** The student's name
 - **Num Assigned Peer Reviews:** The number of peer reviews that have been assigned to the student.
 - **Num Completed Peer Reviews:** The number of peer reviews that have been completed by the student.
 - **Review: `review_number`:** The score the student has been awarded from a single peer review (blank if review is not complete). Will be as many columns as there are completed peer reviews for a particular student **(1...n)** `review_number` will count up from 1 to help identify one review from another.
 
+### peer_review_given_score.csv
+_(optional) Lists each student in the course by canvas user id, shows the non-peer-review given score (if graded in addition to peer reviewed). This is an optional output._
+
+- **CanvasUserID:** The user id of the student as it appears on Canvas.
+- **GradebookScore:** The score found in the gradebook.
+- **GradingWorkflowState:** Details about the grading workflow state. 
 ## Getting Started
 ### Sauder Operations
 

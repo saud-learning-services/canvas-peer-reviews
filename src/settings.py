@@ -16,3 +16,6 @@ COURSE = None
 
 # Assignment object representing Canvas assignment specified by user input
 ASSIGNMENT = None
+
+# Whether to include output of assignment scored (specified by user input)
+INCLUDE_ASSIGNMENT_SCORE = None

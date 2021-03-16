@@ -32,3 +32,6 @@ PeerReview.code-workspace
 
 # Folder containing my legacy code that's not in use anymore
 legacy
+
+# test workbook 
+test.ipynb

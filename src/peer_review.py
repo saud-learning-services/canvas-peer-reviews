@@ -63,8 +63,14 @@ def main():
     # make overview dataframe - see docstring for schema
     overview_df = make_overview_df(assessments_df, peer_reviews_json, students)
 
-    # output the dataframes to csv's in /peer_review_data directory
-    _create_output_tables(assessments_df, overview_df)
+    # if asked for, get peer review assignment scores
+    if settings.INCLUDE_ASSIGNMENT_SCORE:
+        assignment_grades_df = _get_peer_review_grades(settings.ASSIGNMENT)
+        # output the dataframes to csv's in /peer_review_data directory
+        _create_output_tables(assessments_df, overview_df, assignment_grades_df)
+
+    else:
+        _create_output_tables(assessments_df, overview_df)
 
 
 def _get_rubric(course, assignment):
@@ -173,12 +179,37 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
     return peer_reviews
 
 
-def _create_output_tables(assessments_df, overview_df):
+def _get_peer_review_grades(assignment):
+    """[summary]
+
+    Args:
+        course (Canvas Object): The course
+        assignment_id (int): The assignment id for the peer review 
+
+    Returns:
+        assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
+    """    
+    peer_review_submissions = assignment.get_submissions()
+
+    # create a dataframe 
+    assignment_grades = []
+
+    for i in peer_review_submissions:
+        i_dict = _create_dict_from_object(i, ['user_id', 'score', 'workflow_state'])
+        assignment_grades.append(i_dict)
+        
+    assignment_grades_df = pd.DataFrame(assignment_grades)
+    assignment_grades_df = assignment_grades_df.rename(columns={'user_id': 'CanvasUserId',
+    'score': 'GradebookScore', 'workflow_state': 'GradingWorkflowState'})
+    return(assignment_grades_df)
+
+def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None):
     """ Outputs dataframes to .csv files in /peer_review_data directory
 
     Args:
         assessments_df (DataFrame): Assessments table for output
         overview_df (DataFrame): Overview table for output
+        assignment_grades_df (DataFrame): (optional) Grades table if asked for
 
     """
     now = datetime.now()
@@ -190,6 +221,9 @@ def _create_output_tables(assessments_df, overview_df):
 
     _output_csv(assessments_df, dir_path, "peer_review_assessments")
     _output_csv(overview_df, dir_path, "peer_review_overview")
+    
+    if assignment_grades_df is not None:
+        _output_csv(assignment_grades_df, dir_path, "peer_review_given_grades")
 
 
 def _output_csv(df, location, file_name):
@@ -202,6 +236,27 @@ def _output_csv(df, location, file_name):
     """
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
+
+
+def _create_dict_from_object(theobj, list_of_attributes):
+    """given an object and list of attributes return a dictionary
+    Args:
+        theobj (a Canvas object)
+        list_of_attributes (list of strings)
+    Returns:
+        mydict
+    """
+
+    def get_attribute_if_available(theobj, attrname):
+        if hasattr(theobj, attrname):
+            return {attrname: getattr(theobj, attrname)}
+        else:
+            return {attrname: None}
+
+    mydict = {}
+    for i in list_of_attributes:
+        mydict.update(get_attribute_if_available(theobj, i))
+    return mydict
 
 if __name__ == "__main__":
     main()

@@ -57,12 +57,24 @@ def get_user_inputs():
     except Exception as e:
         shut_down('ERROR: Assignment not found. Please check assignment number.')
 
+    # get whether to include assignment grades
+    try:
+        include_assignment_score = input('Y or N, do you require non-peer-review scores?: ')
+        
+        if include_assignment_score.upper().strip() == 'Y':
+            include_assignment_score = True
+        else:
+            include_assignment_score = False 
+    except Exception as e:
+        shut_down('ERROR: error in input for requiring non-peer-review-scores')
+
     # prompt user for confirmation
-    _prompt_for_confirmation(user.name, course.name, assignment.name)
+    _prompt_for_confirmation(user.name, course.name, assignment.name, include_assignment_score)
 
     # set course and assignment objects to global variables
     settings.COURSE = course
     settings.ASSIGNMENT = assignment
+    settings.INCLUDE_ASSIGNMENT_SCORE = include_assignment_score
 
     # return inputs dictionary
     return {
@@ -73,7 +85,7 @@ def get_user_inputs():
     }
 
 
-def _prompt_for_confirmation(user_name, course_name, assignment_name):
+def _prompt_for_confirmation(user_name, course_name, assignment_name, include_assignment_score):
     """Prints user inputs to screen and asks user to confirm. Shuts down if user inputs
     anything other than 'Y' or 'y'. Returns otherwise.
 
@@ -81,6 +93,7 @@ def _prompt_for_confirmation(user_name, course_name, assignment_name):
         user_name (string): name of user (aka. holder of token)
         course_name (string): name of course returned from Canvas
         assignment_name (string): name of assignment returned from Canvas
+        include_assignment_score (boolean): whether to include the assignment score (non-peer-review)
 
     Returns:
         None -- returns only if user confirms
@@ -90,6 +103,7 @@ def _prompt_for_confirmation(user_name, course_name, assignment_name):
     print(f'USER:  {user_name}')
     print(f'COURSE:  {course_name}')
     print(f'ASSIGNMENT:  {assignment_name}')
+    print(f'INCLUDE ASSIGNMENT SCORE: {include_assignment_score}')
     print('\n')
 
     confirm = input(
