@@ -194,7 +194,7 @@ def _get_peer_review_grades(assignment):
     # create a dataframe 
     assignment_grades = []
 
-    for i in assignment_submissions:
+    for i in peer_review_submissions:
         i_dict = _create_dict_from_object(i, ['user_id', 'score', 'workflow_state'])
         assignment_grades.append(i_dict)
         

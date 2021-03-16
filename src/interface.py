@@ -60,10 +60,13 @@ def get_user_inputs():
     # get whether to include assignment grades
     try:
         include_assignment_score = input('Y or N, do you require non-peer-review scores?: ')
-        if include_assignment_score.upper().strip() == ('Y'):
+        
+        if include_assignment_score.upper().strip() == 'Y':
             include_assignment_score = True
         else:
             include_assignment_score = False 
+    except Exception as e:
+        shut_down('ERROR: error in input for requiring non-peer-review-scores')
 
     # prompt user for confirmation
     _prompt_for_confirmation(user.name, course.name, assignment.name, include_assignment_score)
