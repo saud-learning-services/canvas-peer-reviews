@@ -183,7 +183,6 @@ def _get_peer_review_grades(course, assignment_id):
     Returns:
         assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
     """    
-    
     peer_review_assignment = course.get_assignment(assignment_id)
     peer_review_submissions = peer_review_assignment.get_submissions()
 
@@ -195,13 +194,15 @@ def _get_peer_review_grades(course, assignment_id):
         assignment_grades.append(i_dict)
         
     assignment_grades_df = pd.DataFrame(assignment_grades)
+    return(assignment_grades_df)
 
-def _create_output_tables(assessments_df, overview_df):
+def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None):
     """ Outputs dataframes to .csv files in /peer_review_data directory
 
     Args:
         assessments_df (DataFrame): Assessments table for output
         overview_df (DataFrame): Overview table for output
+        assignment_grades_df (DataFrame): (optional) Grades table if asked for
 
     """
     now = datetime.now()
@@ -213,6 +214,9 @@ def _create_output_tables(assessments_df, overview_df):
 
     _output_csv(assessments_df, dir_path, "peer_review_assessments")
     _output_csv(overview_df, dir_path, "peer_review_overview")
+    
+    if assignment_grades_df is not None:
+        _output_csv(assignment_grades_df, dir_path, "peer_review_given_grades")
 
 
 def _output_csv(df, location, file_name):
