@@ -8,7 +8,7 @@
 
 ## Summary
 
-__Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the notebook will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments.
+__Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with Canvas LMS Data to create formatted .csv tables containing peer review data. Upon providing the necessary inputs, the script will produce two .csv files in the "peer_review_data" folder (in the project's root directory). The data tables will provide an overview of all assigned peer reviews for a given assignment - including all students who've been assigned as assessors, who they are assessing and the results of any completed assessments. When executed, the notebook/script will also prompt about a optional third .csv containing non-peer-reviewed scores for the given assignment.
 
 > :warning: There is no equivalent functionality in the Canvas interface for easily accessing this data. Peer Reviews in Canvas can be odd, and the rubric behaviour is not always intuitive for students. Instructors should review the peer review data provided before making any grading decisions, in particular any cases where a review has a score of 0, or the scores seem inconsistent. Where inconsistencies exist in the data, we recommend reviewing in the Canvas interface.
 
