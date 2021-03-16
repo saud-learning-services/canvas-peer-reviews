@@ -173,6 +173,29 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
     return peer_reviews
 
 
+def _get_peer_review_grades(course, assignment_id):
+    """[summary]
+
+    Args:
+        course (Canvas Object): The course
+        assignment_id (int): The assignment id for the peer review 
+
+    Returns:
+        assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
+    """    
+    
+    peer_review_assignment = course.get_assignment(assignment_id)
+    peer_review_submissions = peer_review_assignment.get_submissions()
+
+    # create a dataframe 
+    assignment_grades = []
+
+    for i in assignment_submissions:
+        i_dict = _create_dict_from_object(i, ['user_id', 'score', 'workflow_state'])
+        assignment_grades.append(i_dict)
+        
+    assignment_grades_df = pd.DataFrame(assignment_grades)
+
 def _create_output_tables(assessments_df, overview_df):
     """ Outputs dataframes to .csv files in /peer_review_data directory
 
@@ -202,6 +225,26 @@ def _output_csv(df, location, file_name):
     """
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
+
+def _create_dict_from_object(theobj, list_of_attributes):
+    """given an object and list of attributes return a dictionary
+    Args:
+        theobj (a Canvas object)
+        list_of_attributes (list of strings)
+    Returns:
+        mydict
+    """
+
+    def get_attribute_if_available(theobj, attrname):
+        if hasattr(theobj, attrname):
+            return {attrname: getattr(theobj, attrname)}
+        else:
+            return {attrname: None}
+
+    mydict = {}
+    for i in list_of_attributes:
+        mydict.update(get_attribute_if_available(theobj, i))
+    return mydict
 
 if __name__ == "__main__":
     main()
