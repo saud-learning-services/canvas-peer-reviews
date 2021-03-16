@@ -63,8 +63,14 @@ def main():
     # make overview dataframe - see docstring for schema
     overview_df = make_overview_df(assessments_df, peer_reviews_json, students)
 
-    # output the dataframes to csv's in /peer_review_data directory
-    _create_output_tables(assessments_df, overview_df)
+    # if asked for, get peer review assignment scores
+    if settings.INCLUDE_ASSIGNMENT_SCORE:
+        assignment_grades_df = _get_peer_review_grades(settings.ASSIGNMENT)
+        # output the dataframes to csv's in /peer_review_data directory
+        _create_output_tables(assessments_df, overview_df, assignment_grades_df)
+
+    else:
+        _create_output_tables(assessments_df, overview_df)
 
 
 def _get_rubric(course, assignment):
@@ -173,7 +179,7 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
     return peer_reviews
 
 
-def _get_peer_review_grades(course, assignment_id):
+def _get_peer_review_grades(assignment):
     """[summary]
 
     Args:
@@ -183,8 +189,7 @@ def _get_peer_review_grades(course, assignment_id):
     Returns:
         assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
     """    
-    peer_review_assignment = course.get_assignment(assignment_id)
-    peer_review_submissions = peer_review_assignment.get_submissions()
+    peer_review_submissions = assignment.get_submissions()
 
     # create a dataframe 
     assignment_grades = []
@@ -194,6 +199,8 @@ def _get_peer_review_grades(course, assignment_id):
         assignment_grades.append(i_dict)
         
     assignment_grades_df = pd.DataFrame(assignment_grades)
+    assignment_grades_df = assignment_grades_df.rename(columns={'user_id': 'CanvasUserId',
+    'score': 'GradebookScore', 'workflow_state': 'GradingWorkflowState'})
     return(assignment_grades_df)
 
 def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None):
@@ -229,6 +236,7 @@ def _output_csv(df, location, file_name):
     """
     df.to_csv(f'{location}/{file_name}.csv', index=False)
     cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
+
 
 def _create_dict_from_object(theobj, list_of_attributes):
     """given an object and list of attributes return a dictionary
