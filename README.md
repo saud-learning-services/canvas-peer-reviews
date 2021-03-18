@@ -48,7 +48,7 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 _(optional) Lists each student in the course by canvas user id, shows the non-peer-review given score (if graded in addition to peer reviewed). This is an optional output._
 
 - **CanvasUserID:** The user id of the student as it appears on Canvas.
-- **GradebookScore:** The score found in the gradebook.
+- **Score:** The total score given for an assignment (by a "grader"). 
 - **GradingWorkflowState:** Details about the grading workflow state. 
 ## Getting Started
 ### Sauder Operations

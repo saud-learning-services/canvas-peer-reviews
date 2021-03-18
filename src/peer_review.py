@@ -200,7 +200,7 @@ def _get_peer_review_grades(assignment):
         
     assignment_grades_df = pd.DataFrame(assignment_grades)
     assignment_grades_df = assignment_grades_df.rename(columns={'user_id': 'CanvasUserId',
-    'score': 'GradebookScore', 'workflow_state': 'GradingWorkflowState'})
+    'score': 'Score', 'workflow_state': 'GradingWorkflowState'})
     return(assignment_grades_df)
 
 def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None):
