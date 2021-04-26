@@ -1,15 +1,16 @@
 name: canvas-peer-reviews
 channels:
-  - conda-forge
-  - anaconda
-  - defaults
+    - conda-forge
+    - anaconda
+    - defaults
 dependencies:
-  - termcolor
-  - python>=3.7.0
-  - requests
-  - jupyter
-  - pandas
-  - pip
-  - pip:
-      - canvasapi>=2.0.0
-      - pick
+    - termcolor
+    - python>=3.7.0
+    - colorama
+    - requests
+    - jupyter
+    - pandas
+    - pip
+    - pip:
+          - canvasapi>=2.0.0
+          - pick

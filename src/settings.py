@@ -7,9 +7,14 @@ authors:
 @markoprodanovic
 
 last edit:
-Monday, November 01, 2020
+Monday, April 26, 2021
 """
 
+import os
+
+
+# Project ROOT directory
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Canvas object to provide access to Canvas API
 COURSE = None
