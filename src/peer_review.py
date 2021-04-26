@@ -43,10 +43,10 @@ def main():
 
     # get peer reviews JSON - details each assigned review
     peer_reviews_json = _get_peer_reviews_json(
-        inputs['base_url'],
-        inputs['course_number'],
-        inputs['assignment_number'],
-        inputs['token']
+        inputs["base_url"],
+        inputs["course_number"],
+        inputs["assignment_number"],
+        inputs["token"],
     )
 
     # get students enrolled in course
@@ -54,10 +54,7 @@ def main():
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
-        assessments_json,
-        peer_reviews_json,
-        students,
-        rubric
+        assessments_json, peer_reviews_json, students, rubric
     )
 
     # make overview dataframe - see docstring for schema
@@ -88,18 +85,15 @@ def _get_rubric(course, assignment):
     # get rubric id from assignment attributes
     # throw error and shut down if assignment has no rubric
     try:
-        rubric_id = assignment.rubric_settings['id']
+        rubric_id = assignment.rubric_settings["id"]
 
         # depreciated sytax - remove soon
         # rubric_id = assignment.attributes['rubric_settings']['id']
     except KeyError as e:
-        shut_down(f'Assignment: {assignment.name} has no rubric')
+        shut_down(f"Assignment: {assignment.name} has no rubric")
 
     # get rubric object from course
-    rubric = course.get_rubric(
-        rubric_id,
-        include=['peer_assessments'],
-        style='full')
+    rubric = course.get_rubric(rubric_id, include=["peer_assessments"], style="full")
 
     return rubric
 
@@ -114,9 +108,9 @@ def _get_students(course):
     Returns:
         students: Paginated list of students in this course
     """
-    students = course.get_users(enrollment_type=['student'])
+    students = course.get_users(enrollment_type=["student"])
     if not students:
-        shut_down('ERROR: Course must have students enrolled.')
+        shut_down("ERROR: Course must have students enrolled.")
 
     return students
 
@@ -139,7 +133,7 @@ def _get_assessments_json(rubric):
         # depreciated sytax - remove soon
         # assessments_json = rubric.attributes['assessments']
     except AttributeError:
-        shut_down('ERROR: Rubric JSON object has no assessments field.')
+        shut_down("ERROR: Rubric JSON object has no assessments field.")
 
     return assessments_json
 
@@ -160,21 +154,20 @@ def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
     """
 
     # headers variable for REST API calls
-    headers = {
-        'Authorization': 'Bearer ' + token
-    }
+    headers = {"Authorization": "Bearer " + token}
 
     try:
-        peer_reviews_endpoint = f'{base_url}/api/v1/courses/{course_id}/assignments/{assignment_id}/peer_reviews'
+        peer_reviews_endpoint = f"{base_url}/api/v1/courses/{course_id}/assignments/{assignment_id}/peer_reviews"
         peer_reviews = requests.get(peer_reviews_endpoint, headers=headers)
         peer_reviews.raise_for_status
         peer_reviews = json.loads(peer_reviews.text)
     except Exception as e:
         shut_down(
-            'ERROR: Could not get peer reviews specified course and assignment (API responded with error).')
+            "ERROR: Could not get peer reviews specified course and assignment (API responded with error)."
+        )
 
     if not peer_reviews:
-        shut_down('ERROR: Assignment must have at least one peer review assigned.')
+        shut_down("ERROR: Assignment must have at least one peer review assigned.")
 
     return peer_reviews
 
@@ -188,20 +181,26 @@ def _get_peer_review_grades(assignment):
 
     Returns:
         assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
-    """    
+    """
     peer_review_submissions = assignment.get_submissions()
 
-    # create a dataframe 
+    # create a dataframe
     assignment_grades = []
 
     for i in peer_review_submissions:
-        i_dict = _create_dict_from_object(i, ['user_id', 'score', 'workflow_state'])
+        i_dict = _create_dict_from_object(i, ["user_id", "score", "workflow_state"])
         assignment_grades.append(i_dict)
-        
+
     assignment_grades_df = pd.DataFrame(assignment_grades)
-    assignment_grades_df = assignment_grades_df.rename(columns={'user_id': 'CanvasUserId',
-    'score': 'Score', 'workflow_state': 'GradingWorkflowState'})
-    return(assignment_grades_df)
+    assignment_grades_df = assignment_grades_df.rename(
+        columns={
+            "user_id": "CanvasUserId",
+            "score": "Score",
+            "workflow_state": "GradingWorkflowState",
+        }
+    )
+    return assignment_grades_df
+
 
 def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None):
     """ Outputs dataframes to .csv files in /peer_review_data directory
@@ -213,15 +212,15 @@ def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None
 
     """
     now = datetime.now()
-    date_time = now.strftime('%m-%d-%Y, %H.%M.%S')
+    date_time = now.strftime("%m-%d-%Y, %H.%M.%S")
 
-    dir_name = f'{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})'
-    dir_path = Path(f'./peer_review_data/{dir_name}')
+    dir_name = f"{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})"
+    dir_path = Path(f"./peer_review_data/{dir_name}")
     os.mkdir(dir_path)
 
     _output_csv(assessments_df, dir_path, "peer_review_assessments")
     _output_csv(overview_df, dir_path, "peer_review_overview")
-    
+
     if assignment_grades_df is not None:
         _output_csv(assignment_grades_df, dir_path, "peer_review_given_grades")
 
@@ -234,8 +233,9 @@ def _output_csv(df, location, file_name):
         location (string): filepath to output directory
         file_name (string): name to give file "example" => "example.csv"
     """
-    df.to_csv(f'{location}/{file_name}.csv', index=False)
-    cprint(f'{file_name}.csv successfully created in /peer_review_data', 'green')
+    output_path = Path(f"{location}/{file_name}.csv")
+    df.to_csv(output_path, index=False)
+    cprint(f"{file_name}.csv successfully created in /peer_review_data", "green")
 
 
 def _create_dict_from_object(theobj, list_of_attributes):
@@ -257,6 +257,7 @@ def _create_dict_from_object(theobj, list_of_attributes):
     for i in list_of_attributes:
         mydict.update(get_attribute_if_available(theobj, i))
     return mydict
+
 
 if __name__ == "__main__":
     main()
