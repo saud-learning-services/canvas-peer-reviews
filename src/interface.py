@@ -24,16 +24,16 @@ def get_user_inputs():
     """
 
     # prompt user for url and token
-    url = input('Canvas Instance URL: ')
-    token = getpass.getpass('Please enter your token: ')
+    url = input("Canvas Instance URL: ")
+    token = getpass.getpass("Please enter your token: ")
 
     # Canvas object to provide access to Canvas API
     canvas = Canvas(url, token)
 
     # get user object
     try:
-        user = canvas.get_user('self')
-        cprint(f'\nHello, {user.name}!', 'green')
+        user = canvas.get_user("self")
+        cprint(f"\nHello, {user.name}!", "green")
         # shut_down('TEMP KILL SWITCH')
     except Exception as e:
         shut_down(
@@ -45,31 +45,35 @@ def get_user_inputs():
 
     # get course object
     try:
-        course_number = input('Course Number: ')
+        course_number = input("Course Number: ")
         course = canvas.get_course(course_number)
     except Exception as e:
-        shut_down('ERROR: Course not found. Please check course number.')
+        shut_down("ERROR: Course not found. Please check course number.")
 
     # get assignment object
     try:
-        assignment_number = input('Assignment Number: ')
+        assignment_number = input("Assignment Number: ")
         assignment = course.get_assignment(assignment_number)
     except Exception as e:
-        shut_down('ERROR: Assignment not found. Please check assignment number.')
+        shut_down("ERROR: Assignment not found. Please check assignment number.")
 
     # get whether to include assignment grades
     try:
-        include_assignment_score = input('Y or N, do you require non-peer-review scores?: ')
-        
-        if include_assignment_score.upper().strip() == 'Y':
+        include_assignment_score = input(
+            "Y or N, do you require non-peer-review scores?: "
+        )
+
+        if include_assignment_score.upper().strip() == "Y":
             include_assignment_score = True
         else:
-            include_assignment_score = False 
+            include_assignment_score = False
     except Exception as e:
-        shut_down('ERROR: error in input for requiring non-peer-review-scores')
+        shut_down("ERROR: error in input for requiring non-peer-review-scores")
 
     # prompt user for confirmation
-    _prompt_for_confirmation(user.name, course.name, assignment.name, include_assignment_score)
+    _prompt_for_confirmation(
+        user.name, course.name, assignment.name, include_assignment_score
+    )
 
     # set course and assignment objects to global variables
     settings.COURSE = course
@@ -78,14 +82,16 @@ def get_user_inputs():
 
     # return inputs dictionary
     return {
-        'token': token,
-        'base_url': url,
-        'course_number': course_number,
-        'assignment_number': assignment_number
+        "token": token,
+        "base_url": url,
+        "course_number": course_number,
+        "assignment_number": assignment_number,
     }
 
 
-def _prompt_for_confirmation(user_name, course_name, assignment_name, include_assignment_score):
+def _prompt_for_confirmation(
+    user_name, course_name, assignment_name, include_assignment_score
+):
     """Prints user inputs to screen and asks user to confirm. Shuts down if user inputs
     anything other than 'Y' or 'y'. Returns otherwise.
 
@@ -99,21 +105,20 @@ def _prompt_for_confirmation(user_name, course_name, assignment_name, include_as
         None -- returns only if user confirms
 
     """
-    cprint('\nConfirmation:', 'blue')
-    print(f'USER:  {user_name}')
-    print(f'COURSE:  {course_name}')
-    print(f'ASSIGNMENT:  {assignment_name}')
-    print(f'INCLUDE ASSIGNMENT SCORE: {include_assignment_score}')
-    print('\n')
+    cprint("\nConfirmation:", "blue")
+    print(f"USER:  {user_name}")
+    print(f"COURSE:  {course_name}")
+    print(f"ASSIGNMENT:  {assignment_name}")
+    print(f"INCLUDE ASSIGNMENT SCORE: {include_assignment_score}")
+    print("\n")
 
-    confirm = input(
-        'Would you like to continue using the above information?[y/n]: ')
+    confirm = input("Would you like to continue using the above information?[y/n]: ")
 
-    print('\n')
+    print("\n")
 
-    if confirm == 'y' or confirm == 'Y':
+    if confirm == "y" or confirm == "Y":
         return
-    elif confirm == 'n' or confirm == 'N':
-        shut_down('Exiting...')
+    elif confirm == "n" or confirm == "N":
+        shut_down("Exiting...")
     else:
-        shut_down('ERROR: Only accepted values are y and n')
+        shut_down("ERROR: Only accepted values are y and n")
