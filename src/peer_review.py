@@ -223,7 +223,7 @@ def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None
     _output_csv(overview_df, dir_path, "peer_review_overview")
     
     if assignment_grades_df is not None:
-        _output_csv(assignment_grades_df, dir_path, "peer_review_given_grades")
+        _output_csv(assignment_grades_df, dir_path, "peer_review_given_score")
 
 
 def _output_csv(df, location, file_name):
