@@ -18,7 +18,7 @@ def print_error(msg):
     Args:
         msg (string): Message to print before continuing execution
     """
-    cprint(f'\n{msg}\n', 'red')
+    cprint(f"\n{msg}\n", "red")
 
 
 def shut_down(msg):
@@ -28,6 +28,6 @@ def shut_down(msg):
         msg (string): Message to print before printing 'Shutting down...' 
                       and exiting the script.
     """
-    cprint(f'\n{msg}\n', 'red')
-    print('Shutting down...')
+    cprint(f"\n{msg}\n", "red")
+    print("Shutting down...")
     sys.exit()

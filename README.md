@@ -38,8 +38,8 @@ _Lists all assigned assessments including roles of assessee/assessor, total scor
 
 _Lists each student in the course by canvas user id and name, shows # of assigned peer reviews as well as # of completed reviews; for each student, if that student has been evaluated, their scores will appear in the "Review" columns._
 
-- **CanvasUserID:** The user id of the student as it appears on Canvas.
-- **Name:** The student's name
+- **CanvasUserID:** The user id of the student as it appears on Canvas (this is the "Assessee" in peer_review_assessments.csv).
+- **Name:** The student's name (Assessee)
 - **Num Assigned Peer Reviews:** The number of peer reviews that have been assigned to the student.
 - **Num Completed Peer Reviews:** The number of peer reviews that have been completed by the student.
 - **Review: `review_number`:** The score the student has been awarded from a single peer review (blank if review is not complete). Will be as many columns as there are completed peer reviews for a particular student **(1...n)** `review_number` will count up from 1 to help identify one review from another.
@@ -47,7 +47,7 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 ### peer_review_given_score.csv
 _(optional) Lists each student in the course by canvas user id, shows the non-peer-review given score (if graded in addition to peer reviewed). This is an optional output._
 
-- **CanvasUserID:** The user id of the student as it appears on Canvas.
+- **CanvasUserID:** The user id of the student as it appears on Canvas (the Assessee in peer_review_assessments.csv).
 - **Score:** The total score given for an assignment (by a "grader"). 
 - **GradingWorkflowState:** Details about the grading workflow state. 
 ## Getting Started
