@@ -182,19 +182,22 @@ def _get_peer_review_grades(assignment):
     Returns:
         assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
     """
-    peer_review_submissions = assignment.get_submissions()
+    peer_review_submissions = assignment.get_submissions(include="user")
 
     # create a dataframe
     assignment_grades = []
 
     for i in peer_review_submissions:
-        i_dict = _create_dict_from_object(i, ["user_id", "score", "workflow_state"])
+        i_dict = _create_dict_from_object(i, ["user_id", "user", "score", "workflow_state"])
         assignment_grades.append(i_dict)
 
     assignment_grades_df = pd.DataFrame(assignment_grades)
+    assignment_grades_df["user"] = assignment_grades_df["user"].apply(lambda x: x["name"])
+    
     assignment_grades_df = assignment_grades_df.rename(
         columns={
             "user_id": "CanvasUserId",
+            "user": "Name",
             "score": "Score",
             "workflow_state": "GradingWorkflowState",
         }
