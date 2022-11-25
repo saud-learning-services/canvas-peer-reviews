@@ -196,7 +196,7 @@ def _get_peer_review_grades(assignment):
     
     assignment_grades_df = assignment_grades_df.rename(
         columns={
-            "user_id": "CanvasUserId",
+            "user_id": "user_id",
             "user": "Name",
             "score": "Score",
             "workflow_state": "GradingWorkflowState",

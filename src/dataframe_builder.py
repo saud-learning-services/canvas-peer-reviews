@@ -86,7 +86,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
         assessments_df.at[index, "Assessor"] = _user_lookup(row["assessor_id"], users)
         assessments_df.at[index, "Assessee"] = _user_lookup(row["user_id"], users)
 
-    assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
+    #assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
     assessments_df = assessments_df.rename(columns={"workflow_state": "State"})
 
     return assessments_df
@@ -269,14 +269,14 @@ def _make_assigned_completed_df(students_df, peer_reviews_df):
     pruned_df = students_df[["id", "name", "sis_user_id"]]
 
     df = pruned_df.rename(
-        columns={"id": "CanvasUserID", "name": "Name", "sis_user_id": "SID"}
+        columns={"id": "user_id", "name": "Name", "sis_user_id": "SID"}
     )
 
     df.insert(3, "Num Assigned Peer Reviews", None)
     df.insert(4, "Num Completed Peer Reviews", None)
 
     for index, row in df.iterrows():
-        lookup = _lookup_reviews(row["CanvasUserID"], peer_reviews_df)
+        lookup = _lookup_reviews(row["user_id"], peer_reviews_df)
         df.at[index, "Num Assigned Peer Reviews"] = lookup["Assigned"]
         df.at[index, "Num Completed Peer Reviews"] = lookup["Completed"]
 
