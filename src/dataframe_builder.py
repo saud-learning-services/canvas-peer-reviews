@@ -96,7 +96,7 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     """Makes overview dataframe with following schema:
 
     ~~COLUMNS~~
-    Canvas User ID: The user id of the student as it appears on Canvas.
+    User ID: The user id of the student as it appears on Canvas. ("Assessee")
     Name: The student's name
     Num Assigned Peer Reviews: The number of peer reviews that have been assigned to the student.
     Num Completed Peer Reviews: The number of peer reviews that have been completed by the student.
@@ -124,7 +124,7 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     for outer_index, outer_row in overview_df.iterrows():
         num_scores_for_user = 0
         for index, row in assessments_df.iterrows():
-            if row["Assessee"] == outer_row["Name"] and row[3] is not None:
+            if row["user_id"] == outer_row["user_id"] and row[3] is not None:
                 num_scores_for_user += 1
                 score = row[3]
                 overview_df.at[outer_index, f"Review: {num_scores_for_user}"] = score
@@ -240,7 +240,7 @@ def _make_students_df(paginated_list_of_students):
         attributes = {
             "created_at": student.created_at,
             "id": student.id,
-            "integration_id": student.integration_id,
+            #"integration_id": student.integration_id,
             "login_id": student.login_id,
             "name": student.name,
             "short_name": student.short_name,

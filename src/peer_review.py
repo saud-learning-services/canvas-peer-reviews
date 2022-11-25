@@ -42,12 +42,7 @@ def main():
     assessments_json = _get_assessments_json(rubric)
 
     # get peer reviews JSON - details each assigned review
-    peer_reviews_json = _get_peer_reviews_json(
-        inputs["base_url"],
-        inputs["course_number"],
-        inputs["assignment_number"],
-        inputs["token"],
-    )
+    peer_reviews_json = _get_peer_reviews_json(settings.ASSIGNMENT)
 
     # get students enrolled in course
     students = _get_students(settings.COURSE)
@@ -86,16 +81,18 @@ def _get_rubric(course, assignment):
     # throw error and shut down if assignment has no rubric
     try:
         rubric_id = assignment.rubric_settings["id"]
+        rubric = course.get_rubric(rubric_id, include=["assessments"], style="full")
+        return rubric
 
         # depreciated sytax - remove soon
         # rubric_id = assignment.attributes['rubric_settings']['id']
-    except KeyError as e:
-        shut_down(f"Assignment: {assignment.name} has no rubric")
+    except Exception as e:
+        print(f"Assignment: {assignment.name} has no rubric")
 
     # get rubric object from course
-    rubric = course.get_rubric(rubric_id, include=["peer_assessments"], style="full")
+    
 
-    return rubric
+    
 
 
 def _get_students(course):
@@ -138,29 +135,23 @@ def _get_assessments_json(rubric):
     return assessments_json
 
 
-def _get_peer_reviews_json(base_url, course_id, assignment_id, token):
+def _get_peer_reviews_json(assignment):
     """Makes request to Canvas API to get peer review object. Shuts down with
        error if server responds with error or if response is empty. Otherwise
        returns JSON.
 
     Args:
-        base_url (str): Canvas instance being used
-        course_id (str): Canvas course id
-        assignment_id (str): Canvas assignment id
-        token (str): Canvas access token
-
+        assignment (object): Canvas assignment object
     Returns:
         assessments_json: peer reviews JSON obj for the given course + assignment
     """
 
     # headers variable for REST API calls
-    headers = {"Authorization": "Bearer " + token}
+
 
     try:
-        peer_reviews_endpoint = f"{base_url}/api/v1/courses/{course_id}/assignments/{assignment_id}/peer_reviews"
-        peer_reviews = requests.get(peer_reviews_endpoint, headers=headers)
-        peer_reviews.raise_for_status
-        peer_reviews = json.loads(peer_reviews.text)
+        peer_reviews = assignment.get_peer_reviews()
+        peer_reviews = [i.__dict__ for i in peer_reviews]
     except Exception as e:
         shut_down(
             "ERROR: Could not get peer reviews specified course and assignment (API responded with error)."
