@@ -152,7 +152,7 @@ def _user_lookup(key, users):
     return "User Not Found"
 
 
-def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
+def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include_comments=False):
     """Expands the 'data' column in the assessments_df DataFrame. Makes column
        for each criteria in the rubric, titles it by description and score and
        puts assessment points under their respective criteria column.
@@ -197,11 +197,11 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
 
             col = item["criterion_id"]
             assessments_df.at[index, col] = value
-
+        
         if points_error_flag:
             msg = "There is at least one row of data where a reviewing student did not enter valid data into the rubric. Please review the final output."
             print_error(msg)
-
+            
     # Make object matching criterion id (keys) to more descriptive column names
     # EX.
     # {'_1220': 'Quality of Writing (25.0)',
@@ -217,8 +217,29 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
     # assign new names to criteria columns
     assessments_df = assessments_df.rename(columns=new_names)
 
+    if include_comments:
+        for index, row in assessments_df.iterrows():
+            for item in row["data"]:
+                try:
+                    comments = item["comments"]
+                except Exception as e:
+                    comments = None
+
+                comments_col = f"{item['criterion_id']} comment"
+                assessments_df.at[index, comments_col] = comments
+
+
+    new_names = {}
+    for crit in list_of_rubric_criteria:
+        crit_id = crit["id"]
+        comments_col = f"{crit_id} comment"
+        crit_description = crit["description"]
+        new_names[comments_col] = f"{crit_description} comment"
+
+    assessments_df = assessments_df.rename(columns=new_names)
+
     # delete original data column
-    del assessments_df["data"]
+    #del assessments_df["data"]
 
     return assessments_df
 
