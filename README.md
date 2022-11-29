@@ -4,7 +4,6 @@
 > - ops-run-with: jupyter
 > - python>=3.7
 > - canvasapi>=2.0.0
-> - supports universal environment 🌎
 
 ## Summary
 
@@ -72,13 +71,20 @@ _Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learn
 1. Ensure you have [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed (Python 3.7 version)
 1. Clone **canvas-peer-reviews** repository
 1. Import environment (once): `$ conda env create -f environment.yml`
+1. Create .env file and include:
+
+```
+API_TOKEN = '123123~fdjskfjwe...'
+API_INSTANCE = 'https://ubc.instructure.com'
+```
 
 #### Every Time
 
 1. Run
    1. `$ conda activate canvas-peer-reviews`
-   1. `python src/peer_review.py`
-   1. Follow terminal prompts
+   2. Update your .env file API_TOKEN
+   3. `python src/peer_review.py`
+   4. Follow terminal prompts
 
 ---
 
