@@ -2,10 +2,10 @@
 PEER REVIEW SCRIPT: interface
 
 authors:
-@markoprodanovic
+@markoprodanovic, @alisonmyers
 
 last edit:
-Monday, January 10, 2020
+Nov 29, 2022
 """
 
 import getpass

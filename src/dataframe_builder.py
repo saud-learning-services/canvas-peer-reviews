@@ -2,10 +2,10 @@
 PEER REVIEW SCRIPT: dataframe_builder
 
 authors:
-@markoprodanovic
+@markoprodanovic, @alisonmyers
 
 last edit:
-Sunday, January 26, 2020
+Nov 29, 2022
 """
 
 import math

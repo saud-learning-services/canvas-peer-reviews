@@ -2,11 +2,10 @@
 PEER REVIEW SCRIPT: main
 
 authors:
-@markoprodanovic
-@alisonmyers
+@markoprodanovic, @alisonmyers
 
 last edit:
-Monday, January 14, 2020
+Nov 29, 2022
 """
 
 from datetime import datetime
