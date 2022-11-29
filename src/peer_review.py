@@ -49,7 +49,7 @@ def main():
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
-        assessments_json, peer_reviews_json, students, rubric
+        assessments_json, peer_reviews_json, students, rubric, settings.INCLUDE_COMMENTS
     )
 
     # make overview dataframe - see docstring for schema

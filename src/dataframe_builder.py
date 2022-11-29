@@ -15,7 +15,7 @@ import sys
 from util import shut_down, print_error
 
 
-def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
+def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, include_comment_data):
     """ Makes assessments dataframe with following schema:
 
     ~~COLUMNS~~
@@ -68,7 +68,7 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
         ]
 
         completed_assessments_df = _expand_criteria_to_columns(
-            completed_assessments_df, rubric.data
+            completed_assessments_df, rubric.data, include_comment_data
         )
         completed_assessments_df = completed_assessments_df.rename(
             columns={"score": f"Total Score ({points_possible})"}
@@ -152,7 +152,7 @@ def _user_lookup(key, users):
     return "User Not Found"
 
 
-def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include_comments=False):
+def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include_comment_data):
     """Expands the 'data' column in the assessments_df DataFrame. Makes column
        for each criteria in the rubric, titles it by description and score and
        puts assessment points under their respective criteria column.
@@ -217,7 +217,7 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include
     # assign new names to criteria columns
     assessments_df = assessments_df.rename(columns=new_names)
 
-    if include_comments:
+    if include_comment_data:
         for index, row in assessments_df.iterrows():
             for item in row["data"]:
                 try:
@@ -229,17 +229,17 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include
                 assessments_df.at[index, comments_col] = comments
 
 
-    new_names = {}
-    for crit in list_of_rubric_criteria:
-        crit_id = crit["id"]
-        comments_col = f"{crit_id} comment"
-        crit_description = crit["description"]
-        new_names[comments_col] = f"{crit_description} comment"
+        new_names = {}
+        for crit in list_of_rubric_criteria:
+            crit_id = crit["id"]
+            comments_col = f"{crit_id} comment"
+            crit_description = crit["description"]
+            new_names[comments_col] = f"{crit_description} comment"
 
-    assessments_df = assessments_df.rename(columns=new_names)
+        assessments_df = assessments_df.rename(columns=new_names)
 
     # delete original data column
-    #del assessments_df["data"]
+    del assessments_df["data"]
 
     return assessments_df
 

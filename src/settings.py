@@ -24,3 +24,5 @@ ASSIGNMENT = None
 
 # Whether to include output of assignment scored (specified by user input)
 INCLUDE_ASSIGNMENT_SCORE = None
+
+INCLUDE_COMMENTS = None

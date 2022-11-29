@@ -75,15 +75,29 @@ def get_user_inputs():
     except Exception as e:
         shut_down("ERROR: error in input for requiring non-peer-review-scores")
 
+    # get whether to include comments
+    try:
+        include_comment_data = input(
+            "Y or N, do you require comment data?: "
+        )
+
+        if include_comment_data.upper().strip() == "Y":
+            include_comment_data = True
+        else:
+            include_comment_data = False
+    except Exception as e:
+        shut_down("ERROR: error in input for requiring comment data")
+
     # prompt user for confirmation
     _prompt_for_confirmation(
-        user.name, course.name, assignment.name, include_assignment_score
+        user.name, course.name, assignment.name, include_assignment_score, include_comment_data
     )
 
     # set course and assignment objects to global variables
     settings.COURSE = course
     settings.ASSIGNMENT = assignment
     settings.INCLUDE_ASSIGNMENT_SCORE = include_assignment_score
+    settings.INCLUDE_COMMENTS = include_comment_data
 
     # return inputs dictionary
     return {
@@ -93,7 +107,7 @@ def get_user_inputs():
 
 
 def _prompt_for_confirmation(
-    user_name, course_name, assignment_name, include_assignment_score
+    user_name, course_name, assignment_name, include_assignment_score, include_comment_data
 ):
     """Prints user inputs to screen and asks user to confirm. Shuts down if user inputs
     anything other than 'Y' or 'y'. Returns otherwise.
@@ -113,6 +127,7 @@ def _prompt_for_confirmation(
     print(f"COURSE:  {course_name}")
     print(f"ASSIGNMENT:  {assignment_name}")
     print(f"INCLUDE ASSIGNMENT SCORE: {include_assignment_score}")
+    print(f"INCLUDE COMMENT DATA: {include_comment_data}")
     print("\n")
 
     confirm = input("Would you like to continue using the above information?[y/n]: ")
