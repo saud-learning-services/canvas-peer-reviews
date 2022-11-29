@@ -1,6 +1,6 @@
-State,Assessor,Assessee,Total Score (45.0),Criteria #1 (10.0),Criteria #2 (20.0),Criteria #3 (15.0)
-assigned,Student 7,Student 1,,,,
-completed,Student 5,Student 2,45,10,20,15
-assigned,Student 3,Student 4,,,,
-completed,Student 1,Student 5,30,5,15,10
-assigned,Student 4,Student 7,35,5,20,10
+State,Assessor,Assessee,Total Score (45.0),Criteria #1 (10.0),Criteria #2 (20.0),Criteria #3 (15.0),Criteria #1 comment,Criteria #2 comment,Criteria #3 comment
+assigned,Student 7,Student 1,,,,,,,
+completed,Student 5,Student 2,45,10,20,15,they did okay in this criteria,they did great in this criteria,they did perfect in this criteria
+assigned,Student 3,Student 4,,,,,,,
+completed,Student 1,Student 5,30,5,15,10,,,
+assigned,Student 4,Student 7,35,5,20,10,,,

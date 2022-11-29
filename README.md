@@ -18,21 +18,28 @@ __Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with 
 
 - Base URL _(Instance of Canvas being used - ex. https://ubc.instructure.com)_
 - Canvas Token _(generate through Account => Settings)_
+  
 - Course ID _(last digits of URL when visiting course page)_
 - Assignment ID _(last digits of URL when visiting assignment page)_
 - To include the assignment scores if graded in addition to peer reviewed (generates additional csv) _(y/n)_
+- To include the rubric comments (generates additional csv) _(y/n)_
 
 ## Output
+
+Note: the user_id always refers to the indivual who submitted the assignment, i.e) the assessee. The assessor refers to the individual who is reviewing/evaluting someone elses work. 
 
 ### peer_review_assessments.csv:
 
 _Lists all assigned assessments including roles of assessee/assessor, total score and score given for each rubric item (Note: all columns pertaining to score will be blank if a review is not completed yet)._
 
+- **user_id**: The Canvas ID of the assessee (the submittor of the assignment)
+- **assessor_id**: The Canvas ID of the assessor (the reviewer/the person evaluating the assessee)
 - **State:** State of the peer review (completed, assigned etc.)
 - **Assessee:** Name of the student who's work is being evaluated.
-- **Assessor:** Name of the student who is evaluating the assessee.
+- **Assessor:** Name of the student who is evaluating the assessee (the reviewer).
 - **Total Score (`points_possible`):** The total score given by the assessor to the assessee, where `points possible` is the maximum possible score for the assignment.
 - **`criteria_description` (`criteria_points`):** The score breakdown per criteria item as they appear in the rubric. Will be as many columns as criteria items in rubric **(1...n)**. `criteria_description` will be the the heading of a single rubric item and `criteria_points` is the maximum possible score for that item.
+- - **`criteria_description` comments:** The comment breakdown per criteria item as they appear in the rubric. Will be as many columns as criteria items in rubric **(1...n)**. Included if user enters 'Y' when prompted to include comment data
 
 ### peer_review_overview.csv:
 
