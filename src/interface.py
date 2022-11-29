@@ -13,7 +13,12 @@ import settings
 from util import shut_down
 from canvasapi import Canvas
 from termcolor import cprint
+import os
+from dotenv import load_dotenv
+load_dotenv() 
 
+URL = os.getenv('API_INSTANCE')
+KEY = os.getenv('API_TOKEN')
 
 def get_user_inputs():
     """Prompt user for required inputs. Queries Canvas API throughout to check for
@@ -24,8 +29,8 @@ def get_user_inputs():
     """
 
     # prompt user for url and token
-    url = input("Canvas Instance URL: ")
-    token = getpass.getpass("Please enter your token: ")
+    url = URL
+    token = KEY
 
     # Canvas object to provide access to Canvas API
     canvas = Canvas(url, token)
@@ -82,8 +87,6 @@ def get_user_inputs():
 
     # return inputs dictionary
     return {
-        "token": token,
-        "base_url": url,
         "course_number": course_number,
         "assignment_number": assignment_number,
     }
