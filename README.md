@@ -4,6 +4,7 @@
 > - ops-run-with: jupyter
 > - python>=3.7
 > - canvasapi>=2.0.0
+> - supports universal environment 🌎
 
 ## Summary
 
