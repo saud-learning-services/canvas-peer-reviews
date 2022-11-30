@@ -4,7 +4,6 @@
 > - ops-run-with: jupyter
 > - python>=3.7
 > - canvasapi>=2.0.0
-> - supports universal environment 🌎
 
 ## Summary
 
@@ -18,27 +17,34 @@ __Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with 
 
 - Base URL _(Instance of Canvas being used - ex. https://ubc.instructure.com)_
 - Canvas Token _(generate through Account => Settings)_
+  
 - Course ID _(last digits of URL when visiting course page)_
 - Assignment ID _(last digits of URL when visiting assignment page)_
 - To include the assignment scores if graded in addition to peer reviewed (generates additional csv) _(y/n)_
+- To include the rubric comments (generates additional csv) _(y/n)_
 
 ## Output
+
+Note: the user_id always refers to the indivual who submitted the assignment, i.e) the assessee. The assessor refers to the individual who is reviewing/evaluting someone elses work. 
 
 ### peer_review_assessments.csv:
 
 _Lists all assigned assessments including roles of assessee/assessor, total score and score given for each rubric item (Note: all columns pertaining to score will be blank if a review is not completed yet)._
 
+- **user_id**: The Canvas ID of the assessee (the submittor of the assignment)
+- **assessor_id**: The Canvas ID of the assessor (the reviewer/the person evaluating the assessee)
 - **State:** State of the peer review (completed, assigned etc.)
 - **Assessee:** Name of the student who's work is being evaluated.
-- **Assessor:** Name of the student who is evaluating the assessee.
+- **Assessor:** Name of the student who is evaluating the assessee (the reviewer).
 - **Total Score (`points_possible`):** The total score given by the assessor to the assessee, where `points possible` is the maximum possible score for the assignment.
 - **`criteria_description` (`criteria_points`):** The score breakdown per criteria item as they appear in the rubric. Will be as many columns as criteria items in rubric **(1...n)**. `criteria_description` will be the the heading of a single rubric item and `criteria_points` is the maximum possible score for that item.
+- - **`criteria_description` comments:** The comment breakdown per criteria item as they appear in the rubric. Will be as many columns as criteria items in rubric **(1...n)**. Included if user enters 'Y' when prompted to include comment data
 
 ### peer_review_overview.csv:
 
 _Lists each student in the course by canvas user id and name, shows # of assigned peer reviews as well as # of completed reviews; for each student, if that student has been evaluated, their scores will appear in the "Review" columns._
 
-- **CanvasUserID:** The user id of the student as it appears on Canvas (this is the "Assessee" in peer_review_assessments.csv).
+- **user_id:** The user id of the student as it appears on Canvas (this is the "Assessee" in peer_review_assessments.csv).
 - **Name:** The student's name (Assessee)
 - **Num Assigned Peer Reviews:** The number of peer reviews that have been assigned to the student.
 - **Num Completed Peer Reviews:** The number of peer reviews that have been completed by the student.
@@ -47,7 +53,7 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 ### peer_review_given_score.csv
 _(optional) Lists each student in the course by canvas user id, shows the non-peer-review given score (if graded in addition to peer reviewed). This is an optional output._
 
-- **CanvasUserID:** The user id of the student as it appears on Canvas (the Assessee in peer_review_assessments.csv).
+- **user_id:** The user id of the student as it appears on Canvas (the Assessee in peer_review_assessments.csv).
 - **Name:** The student name (assessee).
 - **Score:** The total score given for an assignment (by a "grader"). 
 - **GradingWorkflowState:** Details about the grading workflow state. 
@@ -65,13 +71,20 @@ _Are you Sauder Operations Staff? Please go [here](https://github.com/saud-learn
 1. Ensure you have [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed (Python 3.7 version)
 1. Clone **canvas-peer-reviews** repository
 1. Import environment (once): `$ conda env create -f environment.yml`
+1. Create .env file and include:
+
+```
+API_TOKEN = '123123~fdjskfjwe...'
+API_INSTANCE = 'https://ubc.instructure.com'
+```
 
 #### Every Time
 
 1. Run
    1. `$ conda activate canvas-peer-reviews`
-   1. `python src/peer_review.py`
-   1. Follow terminal prompts
+   2. Update your .env file API_TOKEN
+   3. `python src/peer_review.py`
+   4. Follow terminal prompts
 
 ---
 

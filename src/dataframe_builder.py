@@ -2,10 +2,10 @@
 PEER REVIEW SCRIPT: dataframe_builder
 
 authors:
-@markoprodanovic
+@markoprodanovic, @alisonmyers
 
 last edit:
-Sunday, January 26, 2020
+Nov 29, 2022
 """
 
 import math
@@ -15,7 +15,7 @@ import sys
 from util import shut_down, print_error
 
 
-def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
+def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, include_comment_data):
     """ Makes assessments dataframe with following schema:
 
     ~~COLUMNS~~
@@ -50,43 +50,48 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric):
     peer_reviews_df["Assessor"] = None
     peer_reviews_df["Assessee"] = None
 
-    points_possible = rubric.points_possible
+    if rubric and assessments_json:
+        print("Peer Review has rubric...")
+        points_possible = rubric.points_possible
 
-    assessments_df = None
-    if not assessments_json:
-        # make table with no assessment data (empty cells)
-        for crit in rubric.data:
-            crit_description = crit["description"]
-            crit_points = crit["points"]
-            column_name = f"{crit_description} ({crit_points})"
-            peer_reviews_df[column_name] = None
-            assessments_df = peer_reviews_df.drop(["asset_id"], axis=1)
+        assessments_df = None
+        if not assessments_json:
+            # make table with no assessment data (empty cells)
+            for crit in rubric.data:
+                crit_description = crit["description"]
+                crit_points = crit["points"]
+                column_name = f"{crit_description} ({crit_points})"
+                peer_reviews_df[column_name] = None
+                assessments_df = peer_reviews_df.drop(["asset_id"], axis=1)
+        else:
+            # make completed assessments DataFrame
+            completed_assessments_df = pd.DataFrame(assessments_json)[
+                ["assessor_id", "artifact_id", "data", "score"]
+            ]
+
+            completed_assessments_df = _expand_criteria_to_columns(
+                completed_assessments_df, rubric.data, include_comment_data
+            )
+            completed_assessments_df = completed_assessments_df.rename(
+                columns={"score": f"Total Score ({points_possible})"}
+            )
+            merged_df = pd.merge(
+                peer_reviews_df,
+                completed_assessments_df,
+                how="left",
+                left_on=["assessor_id", "asset_id"],
+                right_on=["assessor_id", "artifact_id"],
+            )
+            assessments_df = merged_df.drop(["asset_id", "artifact_id"], axis=1)
+    
     else:
-        # make completed assessments DataFrame
-        completed_assessments_df = pd.DataFrame(assessments_json)[
-            ["assessor_id", "artifact_id", "data", "score"]
-        ]
-
-        completed_assessments_df = _expand_criteria_to_columns(
-            completed_assessments_df, rubric.data
-        )
-        completed_assessments_df = completed_assessments_df.rename(
-            columns={"score": f"Total Score ({points_possible})"}
-        )
-        merged_df = pd.merge(
-            peer_reviews_df,
-            completed_assessments_df,
-            how="left",
-            left_on=["assessor_id", "asset_id"],
-            right_on=["assessor_id", "artifact_id"],
-        )
-        assessments_df = merged_df.drop(["asset_id", "artifact_id"], axis=1)
+        assessments_df = peer_reviews_df.drop("asset_id", axis=1)
 
     for index, row in assessments_df.iterrows():
         assessments_df.at[index, "Assessor"] = _user_lookup(row["assessor_id"], users)
         assessments_df.at[index, "Assessee"] = _user_lookup(row["user_id"], users)
 
-    assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
+    #assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
     assessments_df = assessments_df.rename(columns={"workflow_state": "State"})
 
     return assessments_df
@@ -96,7 +101,7 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     """Makes overview dataframe with following schema:
 
     ~~COLUMNS~~
-    Canvas User ID: The user id of the student as it appears on Canvas.
+    User ID: The user id of the student as it appears on Canvas. ("Assessee")
     Name: The student's name
     Num Assigned Peer Reviews: The number of peer reviews that have been assigned to the student.
     Num Completed Peer Reviews: The number of peer reviews that have been completed by the student.
@@ -124,10 +129,13 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     for outer_index, outer_row in overview_df.iterrows():
         num_scores_for_user = 0
         for index, row in assessments_df.iterrows():
-            if row["Assessee"] == outer_row["Name"] and row[3] is not None:
-                num_scores_for_user += 1
-                score = row[3]
-                overview_df.at[outer_index, f"Review: {num_scores_for_user}"] = score
+            try:
+                if row["user_id"] == outer_row["user_id"] and row[5] is not None:
+                    num_scores_for_user += 1
+                    score = row[5]
+                    overview_df.at[outer_index, f"Review: {num_scores_for_user}"] = score
+            except:
+                pass
 
     overview_df = overview_df.drop(["SID"], axis=1)
 
@@ -152,7 +160,7 @@ def _user_lookup(key, users):
     return "User Not Found"
 
 
-def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
+def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include_comment_data):
     """Expands the 'data' column in the assessments_df DataFrame. Makes column
        for each criteria in the rubric, titles it by description and score and
        puts assessment points under their respective criteria column.
@@ -197,11 +205,11 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
 
             col = item["criterion_id"]
             assessments_df.at[index, col] = value
-
+        
         if points_error_flag:
             msg = "There is at least one row of data where a reviewing student did not enter valid data into the rubric. Please review the final output."
             print_error(msg)
-
+            
     # Make object matching criterion id (keys) to more descriptive column names
     # EX.
     # {'_1220': 'Quality of Writing (25.0)',
@@ -216,6 +224,27 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria):
 
     # assign new names to criteria columns
     assessments_df = assessments_df.rename(columns=new_names)
+
+    if include_comment_data:
+        for index, row in assessments_df.iterrows():
+            for item in row["data"]:
+                try:
+                    comments = item["comments"]
+                except Exception as e:
+                    comments = None
+
+                comments_col = f"{item['criterion_id']} comment"
+                assessments_df.at[index, comments_col] = comments
+
+
+        new_names = {}
+        for crit in list_of_rubric_criteria:
+            crit_id = crit["id"]
+            comments_col = f"{crit_id} comment"
+            crit_description = crit["description"]
+            new_names[comments_col] = f"{crit_description} comment"
+
+        assessments_df = assessments_df.rename(columns=new_names)
 
     # delete original data column
     del assessments_df["data"]
@@ -240,7 +269,7 @@ def _make_students_df(paginated_list_of_students):
         attributes = {
             "created_at": student.created_at,
             "id": student.id,
-            "integration_id": student.integration_id,
+            #"integration_id": student.integration_id,
             "login_id": student.login_id,
             "name": student.name,
             "short_name": student.short_name,
@@ -269,14 +298,14 @@ def _make_assigned_completed_df(students_df, peer_reviews_df):
     pruned_df = students_df[["id", "name", "sis_user_id"]]
 
     df = pruned_df.rename(
-        columns={"id": "CanvasUserID", "name": "Name", "sis_user_id": "SID"}
+        columns={"id": "user_id", "name": "Name", "sis_user_id": "SID"}
     )
 
     df.insert(3, "Num Assigned Peer Reviews", None)
     df.insert(4, "Num Completed Peer Reviews", None)
 
     for index, row in df.iterrows():
-        lookup = _lookup_reviews(row["CanvasUserID"], peer_reviews_df)
+        lookup = _lookup_reviews(row["user_id"], peer_reviews_df)
         df.at[index, "Num Assigned Peer Reviews"] = lookup["Assigned"]
         df.at[index, "Num Completed Peer Reviews"] = lookup["Completed"]
 

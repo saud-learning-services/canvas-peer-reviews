@@ -4,10 +4,10 @@ PEER REVIEW SCRIPT: settings
 This file is responsible for defining/initializing global variables.
 
 authors:
-@markoprodanovic
+@markoprodanovic, @alisonmyers
 
 last edit:
-Monday, April 26, 2021
+Nov 29, 2022
 """
 
 import os
@@ -24,3 +24,5 @@ ASSIGNMENT = None
 
 # Whether to include output of assignment scored (specified by user input)
 INCLUDE_ASSIGNMENT_SCORE = None
+
+INCLUDE_COMMENTS = None

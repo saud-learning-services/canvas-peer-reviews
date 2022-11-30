@@ -2,10 +2,10 @@
 PEER REVIEW SCRIPT: interface
 
 authors:
-@markoprodanovic
+@markoprodanovic, @alisonmyers
 
 last edit:
-Monday, January 10, 2020
+Nov 29, 2022
 """
 
 import getpass
@@ -13,7 +13,12 @@ import settings
 from util import shut_down
 from canvasapi import Canvas
 from termcolor import cprint
+import os
+from dotenv import load_dotenv
+load_dotenv() 
 
+URL = os.getenv('API_INSTANCE')
+KEY = os.getenv('API_TOKEN')
 
 def get_user_inputs():
     """Prompt user for required inputs. Queries Canvas API throughout to check for
@@ -24,8 +29,8 @@ def get_user_inputs():
     """
 
     # prompt user for url and token
-    url = input("Canvas Instance URL: ")
-    token = getpass.getpass("Please enter your token: ")
+    url = URL
+    token = KEY
 
     # Canvas object to provide access to Canvas API
     canvas = Canvas(url, token)
@@ -70,27 +75,39 @@ def get_user_inputs():
     except Exception as e:
         shut_down("ERROR: error in input for requiring non-peer-review-scores")
 
+    # get whether to include comments
+    try:
+        include_comment_data = input(
+            "Y or N, do you require comment data?: "
+        )
+
+        if include_comment_data.upper().strip() == "Y":
+            include_comment_data = True
+        else:
+            include_comment_data = False
+    except Exception as e:
+        shut_down("ERROR: error in input for requiring comment data")
+
     # prompt user for confirmation
     _prompt_for_confirmation(
-        user.name, course.name, assignment.name, include_assignment_score
+        user.name, course.name, assignment.name, include_assignment_score, include_comment_data
     )
 
     # set course and assignment objects to global variables
     settings.COURSE = course
     settings.ASSIGNMENT = assignment
     settings.INCLUDE_ASSIGNMENT_SCORE = include_assignment_score
+    settings.INCLUDE_COMMENTS = include_comment_data
 
     # return inputs dictionary
     return {
-        "token": token,
-        "base_url": url,
         "course_number": course_number,
         "assignment_number": assignment_number,
     }
 
 
 def _prompt_for_confirmation(
-    user_name, course_name, assignment_name, include_assignment_score
+    user_name, course_name, assignment_name, include_assignment_score, include_comment_data
 ):
     """Prints user inputs to screen and asks user to confirm. Shuts down if user inputs
     anything other than 'Y' or 'y'. Returns otherwise.
@@ -110,6 +127,7 @@ def _prompt_for_confirmation(
     print(f"COURSE:  {course_name}")
     print(f"ASSIGNMENT:  {assignment_name}")
     print(f"INCLUDE ASSIGNMENT SCORE: {include_assignment_score}")
+    print(f"INCLUDE COMMENT DATA: {include_comment_data}")
     print("\n")
 
     confirm = input("Would you like to continue using the above information?[y/n]: ")
