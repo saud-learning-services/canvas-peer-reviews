@@ -48,7 +48,7 @@ def main():
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
-        assessments_json, peer_reviews_json, students, rubric, settings.INCLUDE_COMMENTS
+        assessments_json, peer_reviews_json, students, rubric, settings.INCLUDE_COMMENTS, settings.ASSIGNMENT
     )
 
     # make overview dataframe - see docstring for schema
@@ -212,8 +212,13 @@ def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None
     now = datetime.now()
     date_time = now.strftime("%Y-%m-%d %H %M %S")
 
-    dir_name = f"{settings.COURSE.name}, {settings.ASSIGNMENT.name} ({date_time})"
-    dir_path = Path(f"./peer_review_data/{dir_name}")
+    dir_folder = f"./peer_review_data/{settings.COURSE.name}/"
+
+    if not os.path.isdir(dir_folder):
+        os.makedirs(dir_folder)
+
+    dir_name = f"{date_time} {settings.ASSIGNMENT.name}"
+    dir_path = Path(f"{dir_folder}/{dir_name}")
     os.mkdir(dir_path)
 
     _output_csv(assessments_df, dir_path, "peer_review_assessments")

@@ -14,8 +14,31 @@ import pandas as pd
 import sys
 from util import shut_down, print_error
 
+def make_comments_df(assignment, peer_reviews_json):
 
-def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, include_comment_data):
+    peer_reviews_df = pd.DataFrame(peer_reviews_json)
+
+    submissions = assignment.get_submissions(include="submission_comments")
+
+    submission_comments_json = []
+
+    for i in submissions:
+        sub_comments = i.submission_comments
+        if sub_comments:
+            for j in sub_comments:
+                j.update({"submission_id": i.id, "user_id": i.user_id})
+                submission_comments_json.append(j)
+        
+    submission_comments_df = pd.DataFrame(submission_comments_json)[["submission_id", "user_id",
+                                                                "author_id", "author_name", "comment"]]  
+
+    submission_comments_df = submission_comments_df.groupby(['submission_id', 'user_id', 'author_id'])['comment'].apply(list).reset_index()
+
+    submission_comments_df = submission_comments_df.rename({"comment": "Submission Comments"}, axis=1)
+
+    return submission_comments_df
+
+def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, include_comment_data, assignment=None):
     """ Makes assessments dataframe with following schema:
 
     ~~COLUMNS~~
@@ -82,10 +105,10 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
                 left_on=["assessor_id", "asset_id"],
                 right_on=["assessor_id", "artifact_id"],
             )
-            assessments_df = merged_df.drop(["asset_id", "artifact_id"], axis=1)
+            assessments_df = merged_df.drop(["artifact_id"], axis=1)
     
     else:
-        assessments_df = peer_reviews_df.drop("asset_id", axis=1)
+        assessments_df = peer_reviews_df #.drop("asset_id", axis=1)
 
     for index, row in assessments_df.iterrows():
         assessments_df.at[index, "Assessor"] = _user_lookup(row["assessor_id"], users)
@@ -94,6 +117,19 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
     #assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
     assessments_df = assessments_df.rename(columns={"workflow_state": "State"})
 
+    if include_comment_data:
+        comments_df = make_comments_df(assignment, peer_reviews_json)
+        assessments_df = pd.merge(
+            assessments_df,
+            comments_df,
+            how="left",
+            left_on = ["assessor_id", "asset_id", "user_id"],
+            right_on = ["author_id", "submission_id", "user_id"]
+        ) 
+
+        assessments_df = assessments_df.drop(['submission_id', 'author_id'], axis=1)
+
+    assessments_df = assessments_df.drop(['asset_id'], axis=1)
     return assessments_df
 
 
