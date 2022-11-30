@@ -34,17 +34,17 @@ def main():
     # get user inputs
     inputs = get_user_inputs()
 
-    # get rubric object
-    rubric = _get_rubric(settings.COURSE, settings.ASSIGNMENT)
-
-    # get assessments JSON - details each complete assessment (could be empty)
-    assessments_json = _get_assessments_json(rubric)
-
     # get peer reviews JSON - details each assigned review
     peer_reviews_json = _get_peer_reviews_json(settings.ASSIGNMENT)
 
     # get students enrolled in course
     students = _get_students(settings.COURSE)
+
+    # get rubric object
+    rubric = _get_rubric(settings.COURSE, settings.ASSIGNMENT)
+
+    # get assessments JSON - details each complete assessment (could be empty)
+    assessments_json = _get_assessments_json(rubric)
 
     # make assessments dataframe - see docstring for schema
     assessments_df = make_assessments_df(
@@ -87,6 +87,7 @@ def _get_rubric(course, assignment):
         # rubric_id = assignment.attributes['rubric_settings']['id']
     except Exception as e:
         print(f"Assignment: {assignment.name} has no rubric")
+        return(None)
 
     # get rubric object from course
     
@@ -123,15 +124,19 @@ def _get_assessments_json(rubric):
         assessments_json: JSON data of all completed assessments
     """
 
-    try:
-        assessments_json = rubric.assessments
+    if rubric:
+        try:
+            assessments_json = rubric.assessments
 
-        # depreciated sytax - remove soon
-        # assessments_json = rubric.attributes['assessments']
-    except AttributeError:
-        shut_down("ERROR: Rubric JSON object has no assessments field.")
+            # depreciated sytax - remove soon
+            # assessments_json = rubric.attributes['assessments']
+        except AttributeError:
+            shut_down("ERROR: Rubric JSON object has no assessments field.")
 
-    return assessments_json
+        return assessments_json
+    
+    else:
+        return(None)
 
 
 def _get_peer_reviews_json(assignment):

@@ -50,37 +50,42 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
     peer_reviews_df["Assessor"] = None
     peer_reviews_df["Assessee"] = None
 
-    points_possible = rubric.points_possible
+    if rubric and assessments_json:
+        print("Peer Review has rubric...")
+        points_possible = rubric.points_possible
 
-    assessments_df = None
-    if not assessments_json:
-        # make table with no assessment data (empty cells)
-        for crit in rubric.data:
-            crit_description = crit["description"]
-            crit_points = crit["points"]
-            column_name = f"{crit_description} ({crit_points})"
-            peer_reviews_df[column_name] = None
-            assessments_df = peer_reviews_df.drop(["asset_id"], axis=1)
+        assessments_df = None
+        if not assessments_json:
+            # make table with no assessment data (empty cells)
+            for crit in rubric.data:
+                crit_description = crit["description"]
+                crit_points = crit["points"]
+                column_name = f"{crit_description} ({crit_points})"
+                peer_reviews_df[column_name] = None
+                assessments_df = peer_reviews_df.drop(["asset_id"], axis=1)
+        else:
+            # make completed assessments DataFrame
+            completed_assessments_df = pd.DataFrame(assessments_json)[
+                ["assessor_id", "artifact_id", "data", "score"]
+            ]
+
+            completed_assessments_df = _expand_criteria_to_columns(
+                completed_assessments_df, rubric.data, include_comment_data
+            )
+            completed_assessments_df = completed_assessments_df.rename(
+                columns={"score": f"Total Score ({points_possible})"}
+            )
+            merged_df = pd.merge(
+                peer_reviews_df,
+                completed_assessments_df,
+                how="left",
+                left_on=["assessor_id", "asset_id"],
+                right_on=["assessor_id", "artifact_id"],
+            )
+            assessments_df = merged_df.drop(["asset_id", "artifact_id"], axis=1)
+    
     else:
-        # make completed assessments DataFrame
-        completed_assessments_df = pd.DataFrame(assessments_json)[
-            ["assessor_id", "artifact_id", "data", "score"]
-        ]
-
-        completed_assessments_df = _expand_criteria_to_columns(
-            completed_assessments_df, rubric.data, include_comment_data
-        )
-        completed_assessments_df = completed_assessments_df.rename(
-            columns={"score": f"Total Score ({points_possible})"}
-        )
-        merged_df = pd.merge(
-            peer_reviews_df,
-            completed_assessments_df,
-            how="left",
-            left_on=["assessor_id", "asset_id"],
-            right_on=["assessor_id", "artifact_id"],
-        )
-        assessments_df = merged_df.drop(["asset_id", "artifact_id"], axis=1)
+        assessments_df = peer_reviews_df.drop("asset_id", axis=1)
 
     for index, row in assessments_df.iterrows():
         assessments_df.at[index, "Assessor"] = _user_lookup(row["assessor_id"], users)
@@ -124,10 +129,13 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
     for outer_index, outer_row in overview_df.iterrows():
         num_scores_for_user = 0
         for index, row in assessments_df.iterrows():
-            if row["user_id"] == outer_row["user_id"] and row[3] is not None:
-                num_scores_for_user += 1
-                score = row[3]
-                overview_df.at[outer_index, f"Review: {num_scores_for_user}"] = score
+            try:
+                if row["user_id"] == outer_row["user_id"] and row[5] is not None:
+                    num_scores_for_user += 1
+                    score = row[5]
+                    overview_df.at[outer_index, f"Review: {num_scores_for_user}"] = score
+            except:
+                pass
 
     overview_df = overview_df.drop(["SID"], axis=1)
 
