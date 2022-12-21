@@ -2,10 +2,10 @@
 PEER REVIEW SCRIPT: interface
 
 authors:
-@markoprodanovic, @alisonmyers
+@markoprodanovic, @alisonmyers, @ivyathalenmourn
 
 last edit:
-Nov 29, 2022
+Dec 21, 2022
 """
 
 import getpass
@@ -21,7 +21,7 @@ URL = os.getenv('API_INSTANCE')
 KEY = os.getenv('API_TOKEN')
 
 def get_user_inputs():
-    """Prompt user for required inputs. Queries Canvas API throughout to check for
+    """Prompts user for required inputs. Queries Canvas API throughout to check for
     access and validity errors. Errors stop execution and print to screen.
 
     Returns:
@@ -44,7 +44,7 @@ def get_user_inputs():
         shut_down(
             """
             ERROR: could not get user from server.
-            Please ensure token is correct and valid and ensure using the correct instance url.
+            Please ensure token is correct and valid, and ensure that you are using the correct instance url.
             """
         )
 
@@ -73,7 +73,7 @@ def get_user_inputs():
         else:
             include_assignment_score = False
     except Exception as e:
-        shut_down("ERROR: error in input for requiring non-peer-review-scores")
+        shut_down("ERROR: Error in input for requiring non-peer-review-scores.")
 
     # get whether to include comments
     try:
@@ -86,7 +86,7 @@ def get_user_inputs():
         else:
             include_comment_data = False
     except Exception as e:
-        shut_down("ERROR: error in input for requiring comment data")
+        shut_down("ERROR: Error in input for requiring comment data.")
 
     # prompt user for confirmation
     _prompt_for_confirmation(
@@ -130,7 +130,7 @@ def _prompt_for_confirmation(
     print(f"INCLUDE COMMENT DATA: {include_comment_data}")
     print("\n")
 
-    confirm = input("Would you like to continue using the above information?[y/n]: ")
+    confirm = input("Would you like to continue using the above information? [Y or N]: ")
 
     print("\n")
 
@@ -140,3 +140,4 @@ def _prompt_for_confirmation(
         shut_down("Exiting...")
     else:
         shut_down("ERROR: Only accepted values are y and n")
+
