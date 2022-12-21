@@ -10,14 +10,8 @@ Dec 21, 2022
 
 from datetime import datetime
 from pathlib import Path
-from os.path import normcase
-from canvasapi import Canvas
 from termcolor import cprint
 import pandas as pd
-import requests
-from pprint import pprint
-import time
-import json
 import os
 
 from dataframe_builder import make_assessments_df, make_overview_df
@@ -26,7 +20,7 @@ from util import shut_down
 import settings
 
 # used to print formatted JSON to jupyter (for testing)
-import pprint as pp
+#import pprint as pp
 
 
 def main():
@@ -82,9 +76,6 @@ def _get_rubric(course, assignment):
         rubric_id = assignment.rubric_settings["id"]
         rubric = course.get_rubric(rubric_id, include=["assessments"], style="full")
         return rubric
-
-        # depreciated sytax - remove soon
-        # rubric_id = assignment.attributes['rubric_settings']['id']
     except Exception as e:
         print(f"Assignment: {assignment.name} has no rubric")
         return(None)
@@ -122,9 +113,6 @@ def _get_assessments_json(rubric):
     if rubric:
         try:
             assessments_json = rubric.assessments
-
-            # depreciated sytax - remove soon
-            # assessments_json = rubric.attributes['assessments']
         except AttributeError:
             shut_down("ERROR: Rubric JSON object has no assessments field.")
 

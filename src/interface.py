@@ -8,7 +8,6 @@ last edit:
 Dec 21, 2022
 """
 
-import getpass
 import settings
 from util import shut_down
 from canvasapi import Canvas
@@ -39,7 +38,6 @@ def get_user_inputs():
     try:
         user = canvas.get_user("self")
         cprint(f"\nHello, {user.name}!", "green")
-        # shut_down('TEMP KILL SWITCH')
     except Exception as e:
         shut_down(
             """

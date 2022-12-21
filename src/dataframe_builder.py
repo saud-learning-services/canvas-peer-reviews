@@ -9,10 +9,8 @@ Dec 21, 2022
 """
 
 import math
-from pprint import pprint
 import pandas as pd
-import sys
-from util import shut_down, print_error
+from util import print_error
 
 def make_comments_df(assignment, peer_reviews_json):
 
