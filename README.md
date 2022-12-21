@@ -22,7 +22,7 @@ __Canvas Peer Reviews__ is a Jupyter Notebook and Python script that works with 
 - Course ID _(last digits of URL when visiting course page)_
 - Assignment ID _(last digits of URL when visiting assignment page)_
 - To include the assignment scores if graded in addition to peer reviewed (generates additional csv) _(y/n)_
-- To include the rubric comments (generates additional csv) _(y/n)_
+- To include the rubric comments _(y/n)_
 
 ## Output
 
@@ -32,8 +32,8 @@ Note: the user_id always refers to the indivual who submitted the assignment, i.
 
 _Lists all assigned assessments including roles of assessee/assessor, total score and score given for each rubric item (Note: all columns pertaining to score will be blank if a review is not completed yet)._
 
-- **user_id**: The Canvas ID of the assessee (the submittor of the assignment)
-- **assessor_id**: The Canvas ID of the assessor (the reviewer/the person evaluating the assessee)
+- **User Id**: The Canvas ID of the assessee (the submittor of the assignment)
+- **Assessor Id**: The Canvas ID of the assessor (the reviewer/the person evaluating the assessee)
 - **State:** State of the peer review (completed, assigned etc.)
 - **Assessee:** Name of the student who's work is being evaluated.
 - **Assessor:** Name of the student who is evaluating the assessee (the reviewer).
@@ -45,7 +45,7 @@ _Lists all assigned assessments including roles of assessee/assessor, total scor
 
 _Lists each student in the course by canvas user id and name, shows # of assigned peer reviews as well as # of completed reviews; for each student, if that student has been evaluated, their scores will appear in the "Review" columns._
 
-- **user_id:** The user id of the student as it appears on Canvas (this is the "Assessee" in peer_review_assessments.csv).
+- **User Id:** The user id of the student as it appears on Canvas (this is the "Assessee" in peer_review_assessments.csv).
 - **Name:** The student's name (Assessee)
 - **Num Assigned Peer Reviews:** The number of peer reviews that have been assigned to the student.
 - **Num Completed Peer Reviews:** The number of peer reviews that have been completed by the student.
@@ -54,10 +54,11 @@ _Lists each student in the course by canvas user id and name, shows # of assigne
 ### peer_review_given_score.csv
 _(optional) Lists each student in the course by canvas user id, shows the non-peer-review given score (if graded in addition to peer reviewed). This is an optional output._
 
-- **user_id:** The user id of the student as it appears on Canvas (the Assessee in peer_review_assessments.csv).
+- **User Id:** The user id of the student as it appears on Canvas (the Assessee in peer_review_assessments.csv).
 - **Name:** The student name (assessee).
 - **Score:** The total score given for an assignment (by a "grader"). 
-- **GradingWorkflowState:** Details about the grading workflow state. 
+- **GradingWorkflowState:** Details about the grading workflow state.
+
 ## Getting Started
 ### Sauder Operations
 

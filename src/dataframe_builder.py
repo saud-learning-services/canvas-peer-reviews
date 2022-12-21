@@ -2,17 +2,15 @@
 PEER REVIEW SCRIPT: dataframe_builder
 
 authors:
-@markoprodanovic, @alisonmyers
+@markoprodanovic, @alisonmyers, @ivyathalenmourn
 
 last edit:
-Nov 29, 2022
+Dec 21, 2022
 """
 
 import math
-from pprint import pprint
 import pandas as pd
-import sys
-from util import shut_down, print_error
+from util import print_error
 
 def make_comments_df(assignment, peer_reviews_json):
 
@@ -42,6 +40,8 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
     """ Makes assessments dataframe with following schema:
 
     ~~COLUMNS~~
+    User Id: The user id of the student as it appears on Canvas. ("Assessee")
+    Assessor Id: The user id of the student as it appears on Canvas. ("Assessor")
     Assessee: Name of the student who's work is being evaluated.
     Assessor: Name of the student who is evaluating the assessee.
     Total Score ({points_possible}): The total score given by the assessor
@@ -61,6 +61,8 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
         peer_reviews_json (JSON): Assigned peer reviews
         users (list of User - canvasapi): List of User obj
         rubric (Rubric - canvasapi): Rubric obj
+        include_comment_data (Boolean): setting
+        assignment (Boolean): setting
 
     Returns:
         assessments_df (DataFrame): Dataframe representing the assessments
@@ -108,14 +110,11 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
             assessments_df = merged_df.drop(["artifact_id"], axis=1)
     
     else:
-        assessments_df = peer_reviews_df #.drop("asset_id", axis=1)
+        assessments_df = peer_reviews_df
 
     for index, row in assessments_df.iterrows():
         assessments_df.at[index, "Assessor"] = _user_lookup(row["assessor_id"], users)
         assessments_df.at[index, "Assessee"] = _user_lookup(row["user_id"], users)
-
-    #assessments_df = assessments_df.drop(["user_id", "assessor_id"], axis=1)
-    assessments_df = assessments_df.rename(columns={"workflow_state": "State"})
 
     if include_comment_data:
         comments_df = make_comments_df(assignment, peer_reviews_json)
@@ -130,6 +129,9 @@ def make_assessments_df(assessments_json, peer_reviews_json, users, rubric, incl
         assessments_df = assessments_df.drop(['submission_id', 'author_id'], axis=1)
 
     assessments_df = assessments_df.drop(['asset_id'], axis=1)
+
+    assessments_df = assessments_df.rename(columns={"user_id": "User Id", "assessor_id": "Assessor Id", "workflow_state": "State"})
+
     return assessments_df
 
 
@@ -175,12 +177,14 @@ def make_overview_df(assessments_df, peer_reviews_json, students):
 
     overview_df = overview_df.drop(["SID"], axis=1)
 
+    overview_df = overview_df.rename(columns={"user_id":"User Id"})
+
     return overview_df
 
 
 def _user_lookup(key, users):
-    """Given a user id and a list of users, search list for user with
-       matching id. If found, return user name, else return string 'Not Found'
+    """Given a user id and a list of users, searches list for user with
+       matching id. If found, returns user name, else returns string 'Not Found'
 
     Args:
         key (str): User id to match on
@@ -219,6 +223,7 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include
         assessments_df (DataFrame): Completed assessments with points breakdown
                                     in 'data' column
         list_of_ribric_criteria (JSON): List of criteria objects from rubric
+        include_comment_data (Boolean): setting
 
     Returns:
         assessments_df (DataFrame): DataFrame as described above.
@@ -226,7 +231,7 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include
 
     # For each row, step through row['data'] object. For every criteria,
     # take the points that have been awarded and put into column with that
-    # criterion id (expanding that data cell into separate columns)
+    # criterion id (expanding that data cell into separate columns).
 
     for index, row in assessments_df.iterrows():
         for item in row["data"]:
@@ -289,9 +294,9 @@ def _expand_criteria_to_columns(assessments_df, list_of_rubric_criteria, include
 
 
 def _make_students_df(paginated_list_of_students):
-    """Given a paginated list of canvasapi objects, iterate through each item,
+    """Given a paginated list of canvasapi objects, iterates through each item,
        take the JSON used to create that object and append to an output list.
-       Finally, convert that list to a DataFrame and return.
+       Finally, converts that list to a DataFrame and returns.
 
     Args:
         paginated_list_of_student (paginated list of type User -- canvasapi): List of User objects
@@ -305,7 +310,6 @@ def _make_students_df(paginated_list_of_students):
         attributes = {
             "created_at": student.created_at,
             "id": student.id,
-            #"integration_id": student.integration_id,
             "login_id": student.login_id,
             "name": student.name,
             "short_name": student.short_name,

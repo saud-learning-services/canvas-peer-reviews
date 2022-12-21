@@ -2,22 +2,16 @@
 PEER REVIEW SCRIPT: main
 
 authors:
-@markoprodanovic, @alisonmyers
+@markoprodanovic, @alisonmyers, @ivyathalenmourn
 
 last edit:
-Nov 29, 2022
+Dec 21, 2022
 """
 
 from datetime import datetime
 from pathlib import Path
-from os.path import normcase
-from canvasapi import Canvas
 from termcolor import cprint
 import pandas as pd
-import requests
-from pprint import pprint
-import time
-import json
 import os
 
 from dataframe_builder import make_assessments_df, make_overview_df
@@ -26,7 +20,7 @@ from util import shut_down
 import settings
 
 # used to print formatted JSON to jupyter (for testing)
-import pprint as pp
+#import pprint as pp
 
 
 def main():
@@ -50,7 +44,7 @@ def main():
     assessments_df = make_assessments_df(
         assessments_json, peer_reviews_json, students, rubric, settings.INCLUDE_COMMENTS, settings.ASSIGNMENT
     )
-
+    
     # make overview dataframe - see docstring for schema
     overview_df = make_overview_df(assessments_df, peer_reviews_json, students)
 
@@ -82,18 +76,10 @@ def _get_rubric(course, assignment):
         rubric_id = assignment.rubric_settings["id"]
         rubric = course.get_rubric(rubric_id, include=["assessments"], style="full")
         return rubric
-
-        # depreciated sytax - remove soon
-        # rubric_id = assignment.attributes['rubric_settings']['id']
     except Exception as e:
         print(f"Assignment: {assignment.name} has no rubric")
         return(None)
-
-    # get rubric object from course
     
-
-    
-
 
 def _get_students(course):
     """ Gets a paginated list of students enrolled in the course using the
@@ -127,9 +113,6 @@ def _get_assessments_json(rubric):
     if rubric:
         try:
             assessments_json = rubric.assessments
-
-            # depreciated sytax - remove soon
-            # assessments_json = rubric.attributes['assessments']
         except AttributeError:
             shut_down("ERROR: Rubric JSON object has no assessments field.")
 
@@ -152,7 +135,6 @@ def _get_peer_reviews_json(assignment):
 
     # headers variable for REST API calls
 
-
     try:
         peer_reviews = assignment.get_peer_reviews()
         peer_reviews = [i.__dict__ for i in peer_reviews]
@@ -168,14 +150,14 @@ def _get_peer_reviews_json(assignment):
 
 
 def _get_peer_review_grades(assignment):
-    """[summary]
+    """Gets the peer-review submitted grades for an Assessee.
 
     Args:
         course (Canvas Object): The course
-        assignment_id (int): The assignment id for the peer review 
+        assignment_id (Int): The assignment id for the peer review 
 
     Returns:
-        assignment_grades_df (dataframe): a dataframe for any submitted grades for assignment for user
+        assignment_grades_df (DataFrame): a dataframe for any submitted grades for assignment for user
     """
     peer_review_submissions = assignment.get_submissions(include="user")
 
@@ -191,7 +173,7 @@ def _get_peer_review_grades(assignment):
     
     assignment_grades_df = assignment_grades_df.rename(
         columns={
-            "user_id": "user_id",
+            "user_id": "User Id",
             "user": "Name",
             "score": "Score",
             "workflow_state": "GradingWorkflowState",
@@ -229,7 +211,7 @@ def _create_output_tables(assessments_df, overview_df, assignment_grades_df=None
 
 
 def _output_csv(df, location, file_name):
-    """ Writes CSV to location with file_name
+    """ Writes CSV to location with file_name.
 
     Args:
         df (DataFrame): Table to output
@@ -242,12 +224,12 @@ def _output_csv(df, location, file_name):
 
 
 def _create_dict_from_object(theobj, list_of_attributes):
-    """given an object and list of attributes return a dictionary
+    """Given an object and list of attributes, return a dictionary.
     Args:
-        theobj (a Canvas object)
+        theobj (Canvas object)
         list_of_attributes (list of strings)
     Returns:
-        mydict
+        mydict (dictionary)
     """
 
     def get_attribute_if_available(theobj, attrname):
@@ -264,3 +246,4 @@ def _create_dict_from_object(theobj, list_of_attributes):
 
 if __name__ == "__main__":
     main()
+
